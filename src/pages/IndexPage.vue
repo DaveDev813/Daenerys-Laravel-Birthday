@@ -1,18 +1,22 @@
 <template lang="pug">
 q-page
-  div.embed-frame-wrapper
-    iframe(
-      class='embed-frame'
-      title='Birthday presentation'
-      loading='lazy'
-      src='https://www.canva.com/design/DAHGtsPmOsc/EXoz4BvkUK8L6LmeXHPbqQ/watch?embed&autoplay=1'
-      allowfullscreen
-      allow='autoplay; fullscreen'
-    )
+  //- div.embed-frame-wrapper
+    //- iframe(
+    //-   class='embed-frame'
+    //-   title='Birthday presentation'
+    //-   loading='lazy'
+    //-   src='https://www.canva.com/design/DAHGtsPmOsc/EXoz4BvkUK8L6LmeXHPbqQ/watch?embed&autoplay=1'
+    //-   allowfullscreen
+    //-   allow='autoplay; fullscreen'
+    //- )
+  Section1
+  Section2
 
 </template>
 
 <script setup>
+import Section1 from '../components/Section1.vue';
+import Section2 from '../components/Section2.vue';
 
 
 </script>
