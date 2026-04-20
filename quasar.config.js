@@ -15,7 +15,6 @@ const pugPlugin = require('vite-plugin-pug').default;
 const dotenv = require('dotenv');
 
 module.exports = configure(function (/* ctx */) {
-
   return {
     // https://v2.quasar.dev/quasar-cli-vite/prefetch-feature
     // preFetch: true,
@@ -23,7 +22,7 @@ module.exports = configure(function (/* ctx */) {
     // app boot file (/src/boot)
     // --> boot files are part of "main.js"
     // https://v2.quasar.dev/quasar-cli-vite/boot-files
-    boot: ['i18n', 'axios', 'pinia', 'app-setup', 'capacitor', 'global-splash'],
+    boot: ['i18n', 'axios', 'pinia', 'app-setup', 'capacitor'],
 
     // https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#css
     css: ['app.scss'],
@@ -44,7 +43,9 @@ module.exports = configure(function (/* ctx */) {
 
     // Full list of options: https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#build
     build: {
-      env: require('dotenv').config({ path: path.resolve(__dirname, '../.env.frontend') }).parsed,
+      env: require('dotenv').config({
+        path: path.resolve(__dirname, '../.env.frontend'),
+      }).parsed,
 
       target: {
         browser: ['es2019', 'edge88', 'firefox78', 'chrome87', 'safari13.1'],
@@ -106,9 +107,9 @@ module.exports = configure(function (/* ctx */) {
               copyFileSync(
                 'node_modules/pdfjs-dist/build/pdf.worker.mjs',
                 'public/pdf.worker.mjs'
-              )
-            }
-          }
+              );
+            },
+          },
         ],
 
         pugPlugin(),
@@ -185,11 +186,10 @@ module.exports = configure(function (/* ctx */) {
 
     // https://v2.quasar.dev/quasar-cli-vite/developing-pwa/configuring-pwa
     pwa: {
-
       swSrc: 'public/firebase-messaging-sw.js',
 
       workboxMode: 'injectManifest',
-      injectPwaMetaTags: true
+      injectPwaMetaTags: true,
     },
 
     // Full list of options: https://v2.quasar.dev/quasar-cli-vite/developing-cordova-apps/configuring-cordova
