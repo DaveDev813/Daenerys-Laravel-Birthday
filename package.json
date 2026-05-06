@@ -14,7 +14,6 @@
     "devpwa": "quasar dev -m pwa",
     "buildpwa": "quasar build -m pwa",
     "generate:pwa-icons": "icongenie generate -m pwa -i src-pwa/icon.png",
-    "postman-test": "newman run ../postman/API.postman_collection.json --environment ../postman/LOCAL_ENV.postman_environment.json",
     "prepare": "husky"
   },
   "dependencies": {
