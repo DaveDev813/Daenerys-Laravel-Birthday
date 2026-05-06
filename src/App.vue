@@ -11,11 +11,11 @@ defineOptions({
 });
 
 useMeta({
-  title: 'Rodave Joseph Bobadilla - Portfolio',
+  title: 'Daenerys Laravel Bobadilla | Christening & Birthday',
   meta: [
     // General Meta Tags
     { charset: 'utf-8' },
-    { name: 'description', content: 'Rodave Joseph Bobadilla - Portfolio' },
+    { name: 'description', content: 'Daenerys Laravel Bobadilla | Christening & Birthday' },
     { name: 'viewport', content: 'width=device-width, initial-scale=1, viewport-fit=cover' },
 
     // Microsoft Tiles
