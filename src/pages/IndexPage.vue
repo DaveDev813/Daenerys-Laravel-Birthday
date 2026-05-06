@@ -1,32 +1,49 @@
 <template lang="pug">
 q-page.birthday-page
-  //- div.embed-frame-wrapper
-    //- iframe(
-    //-   class='embed-frame'
-    //-   title='Birthday presentation'
-    //-   loading='lazy'
-    //-   src='https://www.canva.com/design/DAHGtsPmOsc/EXoz4BvkUK8L6LmeXHPbqQ/watch?embed&autoplay=1'
-    //-   allowfullscreen
-    //-   allow='autoplay; fullscreen'
-  //- )
   .birthday-viewport(:class='{ "birthday-viewport--mobile": isMobileViewport, "birthday-viewport--mobile-landscape": isMobileLandscape }')
     .birthday-stage(ref='stageRef')
-      .birthday-section
-        SectionOne
-      .birthday-section
-        SectionTwo
+      .birthday-section(ref='sectionOneRef')
+        component(v-if='SectionOneComponent' :is='SectionOneComponent')
+        .birthday-loader(
+          v-else
+          role='status'
+          aria-live='polite'
+          aria-label='Loading birthday section'
+        )
+          .birthday-spinner
+      .birthday-section(ref='sectionTwoRef')
+        component(v-if='SectionTwoComponent' :is='SectionTwoComponent')
+        .birthday-loader(
+          v-else
+          role='status'
+          aria-live='polite'
+          aria-label='Loading birthday section'
+        )
+          .birthday-spinner
 
 </template>
 
 <script setup>
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
-import SectionOne from '../components/SectionOne.vue';
-import SectionTwo from '../components/SectionTwo.vue';
+import {
+  computed,
+  markRaw,
+  nextTick,
+  onBeforeUnmount,
+  onMounted,
+  ref,
+  shallowRef,
+} from 'vue';
 
 const isMobileViewport = ref(false);
 const isLandscapeViewport = ref(false);
 const stageRef = ref(null);
+const sectionOneRef = ref(null);
+const sectionTwoRef = ref(null);
+const SectionOneComponent = shallowRef(null);
+const SectionTwoComponent = shallowRef(null);
+const loadingSections = new Set();
 let lastTouchX = 0;
+let sectionObserver = null;
 
 const isMobileLandscape = computed(
   () => isMobileViewport.value && isLandscapeViewport.value
@@ -77,7 +94,102 @@ const handleLandscapeWheel = (event) => {
   event.preventDefault();
 };
 
-onMounted(() => {
+const loadSectionComponent = async (sectionName, target, loader) => {
+  if (target.value || loadingSections.has(sectionName)) {
+    return;
+  }
+
+  loadingSections.add(sectionName);
+
+  try {
+    const sectionModule = await loader();
+    target.value = markRaw(sectionModule.default);
+  } catch (error) {
+    console.error(`Unable to load birthday section "${sectionName}"`, error);
+  } finally {
+    loadingSections.delete(sectionName);
+  }
+};
+
+const loadSection = (sectionName) => {
+  if (sectionName === 'one') {
+    return loadSectionComponent(sectionName, SectionOneComponent, () =>
+      import('../components/SectionOne.vue')
+    );
+  }
+
+  return loadSectionComponent(sectionName, SectionTwoComponent, () =>
+    import('../components/SectionTwo.vue')
+  );
+};
+
+const isSectionInStageView = (sectionElement) => {
+  if (!stageRef.value || !sectionElement) {
+    return false;
+  }
+
+  const stageRect = stageRef.value.getBoundingClientRect();
+  const sectionRect = sectionElement.getBoundingClientRect();
+
+  return (
+    sectionRect.bottom > stageRect.top &&
+    sectionRect.top < stageRect.bottom &&
+    sectionRect.right > stageRect.left &&
+    sectionRect.left < stageRect.right
+  );
+};
+
+const loadSectionIfVisible = (sectionElement, sectionName) => {
+  if (isSectionInStageView(sectionElement)) {
+    void loadSection(sectionName);
+  }
+};
+
+const handleStageScroll = () => {
+  loadSectionIfVisible(sectionOneRef.value, 'one');
+  loadSectionIfVisible(sectionTwoRef.value, 'two');
+};
+
+const handleSectionIntersection = (entries) => {
+  entries.forEach((entry) => {
+    if (!entry.isIntersecting) {
+      return;
+    }
+
+    if (entry.target === sectionOneRef.value) {
+      void loadSection('one');
+    }
+
+    if (entry.target === sectionTwoRef.value) {
+      void loadSection('two');
+    }
+
+    sectionObserver?.unobserve(entry.target);
+  });
+};
+
+const initSectionLoading = () => {
+  if (!stageRef.value || !sectionOneRef.value || !sectionTwoRef.value) {
+    return;
+  }
+
+  if ('IntersectionObserver' in window) {
+    sectionObserver = new IntersectionObserver(handleSectionIntersection, {
+      root: stageRef.value,
+      threshold: 0.01,
+    });
+    sectionObserver.observe(sectionOneRef.value);
+    sectionObserver.observe(sectionTwoRef.value);
+    return;
+  }
+
+  handleStageScroll();
+  stageRef.value.addEventListener('scroll', handleStageScroll, {
+    passive: true,
+  });
+};
+
+onMounted(async () => {
   updateViewportState();
 
   window.addEventListener('resize', updateViewportState);
@@ -92,6 +204,9 @@ onMounted(() => {
   stageRef.value?.addEventListener('wheel', handleLandscapeWheel, {
     passive: false,
   });
+
+  await nextTick();
+  initSectionLoading();
 });
 
 onBeforeUnmount(() => {
@@ -101,6 +216,8 @@ onBeforeUnmount(() => {
   stageRef.value?.removeEventListener('touchstart', handleLandscapeTouchStart);
   stageRef.value?.removeEventListener('touchmove', handleLandscapeTouchMove);
   stageRef.value?.removeEventListener('wheel', handleLandscapeWheel);
+  stageRef.value?.removeEventListener('scroll', handleStageScroll);
+  sectionObserver?.disconnect();
 });
 </script>
 
