@@ -76,7 +76,9 @@ const isMobileLandscape = computed(
 const getFileName = (path) => path.split('/').pop() ?? path;
 
 const getSectionBaseName = (path) =>
-  getFileName(path).replace(/^Section/i, '').replace(/\.vue$/i, '');
+  getFileName(path)
+    .replace(/^Section/i, '')
+    .replace(/\.vue$/i, '');
 
 const getSectionId = (path) =>
   getSectionBaseName(path)
@@ -245,6 +247,7 @@ const initSectionLoading = () => {
   if ('IntersectionObserver' in window) {
     sectionObserver = new IntersectionObserver(handleSectionIntersection, {
       root: stageRef.value,
+      rootMargin: '200% 0px',
       threshold: 0.01,
     });
     birthdaySections.forEach((section) => {
