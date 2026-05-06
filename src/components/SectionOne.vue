@@ -1,55 +1,69 @@
 <template lang="pug">
-.full-width.full-height.birthday-section-frame
-  .birthday-section-svg(
-    v-if='svgMarkup'
-    v-html='svgMarkup'
+.full-width.full-height.birthday-section-frame.birthday-section-one(
+  :style='sectionOneStyle'
+)
+  img.birthday-section-one__image(
+    :src='sectionOneUrl'
+    :class='{ "birthday-section-one__image--visible": isImageVisible }'
+    alt=''
+    aria-hidden='true'
   )
-  .birthday-loader(
-    v-if='isSvgLoading'
-    role='status'
-    aria-live='polite'
-    aria-label='Loading birthday section'
-  )
-    .birthday-spinner
 </template>
 
 <script setup>
-import { onBeforeUnmount, onMounted, ref } from 'vue';
-import sectionOneUrl from 'src/svg/section1.svg?url';
+import { onMounted, ref } from 'vue';
+import bg1Url from 'src/assets/images/bg/bg1.png';
+import sectionOneUrl from 'src/assets/images/section1.png';
 
-const svgMarkup = ref('');
-const isSvgLoading = ref(true);
-const abortController = new AbortController();
-
-const loadSvgMarkup = async () => {
-  isSvgLoading.value = true;
-
-  try {
-    const response = await fetch(sectionOneUrl, {
-      signal: abortController.signal,
-    });
-
-    if (!response.ok) {
-      throw new Error(`SVG request failed with status ${response.status}`);
-    }
-
-    svgMarkup.value = await response.text();
-  } catch (error) {
-    if (error.name !== 'AbortError') {
-      console.error('Unable to load section one SVG markup', error);
-    }
-  } finally {
-    if (!abortController.signal.aborted) {
-      isSvgLoading.value = false;
-    }
-  }
+const isImageVisible = ref(false);
+const sectionOneStyle = {
+  backgroundImage: `url(${bg1Url})`,
 };
 
 onMounted(() => {
-  void loadSvgMarkup();
-});
-
-onBeforeUnmount(() => {
-  abortController.abort();
+  requestAnimationFrame(() => {
+    isImageVisible.value = true;
+  });
 });
 </script>
+
+<style lang="scss" scoped>
+.birthday-section-one {
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+.birthday-section-one__image {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+  opacity: 0;
+  filter: blur(18px);
+  transform: translateY(48px);
+  transition:
+    transform 900ms cubic-bezier(0.16, 1, 0.3, 1),
+    filter 900ms ease,
+    opacity 650ms ease;
+  will-change: transform, filter, opacity;
+}
+
+.birthday-section-one__image--visible {
+  opacity: 1;
+  filter: blur(0);
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .birthday-section-one__image {
+    opacity: 1;
+    filter: none;
+    transform: none;
+    transition: none;
+  }
+}
+</style>
