@@ -13,7 +13,7 @@
 <script setup>
 import { onMounted, ref } from 'vue';
 import bg1Url from 'src/assets/images/bg/bg1.png';
-import sectionOneUrl from 'src/assets/images/section1.png';
+import sectionOneUrl from 'src/assets/images/section1.gif';
 
 const isImageVisible = ref(false);
 const sectionOneStyle = {
