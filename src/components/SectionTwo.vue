@@ -36,17 +36,30 @@
           autocomplete='name'
           required
         )
-      label.birthday-rsvp-popup__field
-        span Number of Guest comming
-        input(
-          v-model='guestCount'
-          type='number'
-          name='guestCount'
-          min='1'
-          step='1'
-          inputmode='numeric'
-          required
-        )
+      .birthday-rsvp-popup__field
+        label(for='guestCount') Number of Guest comming
+        .birthday-rsvp-popup__guest-count
+          input#guestCount(
+            v-model='guestCount'
+            type='number'
+            name='guestCount'
+            min='1'
+            step='1'
+            inputmode='numeric'
+            required
+          )
+          .birthday-rsvp-popup__guest-count-actions
+            button.birthday-rsvp-popup__guest-count-button.birthday-rsvp-popup__guest-count-button--up(
+              type='button'
+              aria-label='Increase guest count'
+              @click='increaseGuestCount'
+            )
+            button.birthday-rsvp-popup__guest-count-button.birthday-rsvp-popup__guest-count-button--down(
+              type='button'
+              aria-label='Decrease guest count'
+              :disabled='isGuestCountAtMinimum'
+              @click='decreaseGuestCount'
+            )
       p.birthday-rsvp-popup__error(v-if='joinFormError') {{ joinFormError }}
       .birthday-rsvp-popup__actions
         button.birthday-rsvp-popup__button.birthday-rsvp-popup__button--secondary(
@@ -74,7 +87,7 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import bg1Url from 'src/assets/images/bg/bg1.png';
 import sectionTwoUrl from 'src/assets/images/section2.png';
@@ -103,6 +116,23 @@ const getDefaultFullName = () => {
 const defaultFullName = getDefaultFullName();
 const fullName = ref(defaultFullName);
 const guestCount = ref(defaultFullName ? '1' : '');
+const isGuestCountAtMinimum = computed(() => Number(guestCount.value) <= 1);
+
+const getCurrentGuestCount = () => {
+  const parsedGuestCount = Number(guestCount.value);
+
+  return Number.isFinite(parsedGuestCount) && parsedGuestCount >= 1
+    ? Math.floor(parsedGuestCount)
+    : 0;
+};
+
+const increaseGuestCount = () => {
+  guestCount.value = String(getCurrentGuestCount() + 1);
+};
+
+const decreaseGuestCount = () => {
+  guestCount.value = String(Math.max(1, getCurrentGuestCount() - 1));
+};
 
 const handleJoinClick = () => {
   joinFormError.value = '';
@@ -316,6 +346,66 @@ onMounted(() => {
 .birthday-rsvp-popup__field input:focus {
   border-color: #af2e43;
   box-shadow: 0 0 0 3px rgba(175, 46, 67, 0.14);
+}
+
+.birthday-rsvp-popup__guest-count {
+  display: grid;
+  grid-template-columns: 1fr 44px;
+  gap: 8px;
+  align-items: stretch;
+}
+
+.birthday-rsvp-popup__guest-count input {
+  min-width: 0;
+}
+
+.birthday-rsvp-popup__guest-count-actions {
+  display: grid;
+  gap: 4px;
+}
+
+.birthday-rsvp-popup__guest-count-button {
+  display: grid;
+  place-items: center;
+  min-height: 0;
+  padding: 0;
+  color: #7c3540;
+  background: #fff;
+  border: 1px solid rgba(175, 46, 67, 0.35);
+  border-radius: 8px;
+  font: inherit;
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.birthday-rsvp-popup__guest-count-button::before {
+  display: block;
+  width: 0;
+  height: 0;
+  border-right: 6px solid transparent;
+  border-left: 6px solid transparent;
+  content: '';
+}
+
+.birthday-rsvp-popup__guest-count-button--up::before {
+  border-bottom: 7px solid currentColor;
+}
+
+.birthday-rsvp-popup__guest-count-button--down::before {
+  border-top: 7px solid currentColor;
+}
+
+.birthday-rsvp-popup__guest-count-button:focus-visible {
+  border-color: #af2e43;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(175, 46, 67, 0.14);
+}
+
+.birthday-rsvp-popup__guest-count-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
 }
 
 .birthday-rsvp-popup__error {
