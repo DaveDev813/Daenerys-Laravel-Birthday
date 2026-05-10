@@ -47,6 +47,7 @@
             step='1'
             inputmode='numeric'
             required
+            @input='normalizeGuestCount'
           )
           .birthday-rsvp-popup__guest-count-actions
             button.birthday-rsvp-popup__guest-count-button.birthday-rsvp-popup__guest-count-button--up(
@@ -88,6 +89,24 @@
         type='button'
         @click='closeThankYouPopup'
       ) Close
+  .birthday-rsvp-popup(
+    v-if='isDeclinePopupOpen'
+    role='dialog'
+    aria-modal='true'
+    aria-labelledby='birthday-rsvp-decline-title'
+    @click.self='closeDeclinePopup'
+  )
+    .birthday-rsvp-popup__panel.birthday-rsvp-popup__panel--message
+      h2#birthday-rsvp-decline-title.birthday-rsvp-popup__title.q-ma-none Baby Lara is going to miss you!
+      .text-subtitle2 Feel free to submit your RSVP again if you change your mind.
+      img(
+        :src='sadImg'
+        style='width: 100%; margin: 0 auto;'
+      )
+      button.birthday-rsvp-popup__button.birthday-rsvp-popup__button--primary(
+        type='button'
+        @click='closeDeclinePopup'
+      ) Close
 </template>
 
 <script setup>
@@ -96,11 +115,13 @@ import { useRoute } from 'vue-router';
 import bg1Url from 'src/assets/images/bg/bg1.png';
 import sectionTwoUrl from 'src/assets/images/section2.png';
 import thanksImg from 'src/assets/images/ty.jpg';
+import sadImg from 'src/assets/images/sad.jpeg';
 
 const route = useRoute();
 const isImageVisible = ref(false);
 const isJoinPopupOpen = ref(false);
 const isThankYouPopupOpen = ref(false);
+const isDeclinePopupOpen = ref(false);
 const isSubmittingJoinForm = ref(false);
 const joinFormError = ref('');
 const googleSheetId = '1ZhRPpUreSLnTPRMP8yWRJNpk5hQVoaUuKAzg05FpGWw';
@@ -120,7 +141,7 @@ const getDefaultFullName = () => {
 
 const defaultFullName = getDefaultFullName();
 const fullName = ref(defaultFullName);
-const guestCount = ref(defaultFullName ? '1' : '');
+const guestCount = ref('1');
 const isGuestCountAtMinimum = computed(() => Number(guestCount.value) <= 1);
 
 const getCurrentGuestCount = () => {
@@ -128,7 +149,11 @@ const getCurrentGuestCount = () => {
 
   return Number.isFinite(parsedGuestCount) && parsedGuestCount >= 1
     ? Math.floor(parsedGuestCount)
-    : 0;
+    : 1;
+};
+
+const normalizeGuestCount = () => {
+  guestCount.value = String(getCurrentGuestCount());
 };
 
 const increaseGuestCount = () => {
@@ -156,13 +181,16 @@ const closeThankYouPopup = () => {
   isThankYouPopupOpen.value = false;
 };
 
+const closeDeclinePopup = () => {
+  isDeclinePopupOpen.value = false;
+};
+
 const getValidatedRsvp = () => {
   const trimmedFullName = fullName.value.trim();
-  const parsedGuestCount = Number(guestCount.value);
+  const parsedGuestCount = getCurrentGuestCount();
 
   if (
     !trimmedFullName ||
-    !Number.isInteger(parsedGuestCount) ||
     parsedGuestCount < 1
   ) {
     throw new Error('Please complete all required fields.');
@@ -195,7 +223,7 @@ const submitRsvpToGoogleSheet = async (rsvp) => {
 
 const resetJoinForm = () => {
   fullName.value = '';
-  guestCount.value = '';
+  guestCount.value = '1';
   joinFormError.value = '';
 };
 
@@ -219,8 +247,16 @@ const handleJoinSubmit = async () => {
   }
 };
 
-const handleDeclineClick = () => {
-  window.alert("You selected: Sorry, I can't join.");
+const handleDeclineClick = async () => {
+  if (!defaultFullName) {
+    return;
+  }
+
+  await submitRsvpToGoogleSheet({
+    fullName: defaultFullName,
+    guestCount: 'not going',
+  });
+  isDeclinePopupOpen.value = true;
 };
 
 onMounted(() => {

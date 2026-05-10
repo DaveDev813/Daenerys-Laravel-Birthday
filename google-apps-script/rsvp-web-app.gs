@@ -3,12 +3,12 @@ const SPREADSHEET_ID = '1ZhRPpUreSLnTPRMP8yWRJNpk5hQVoaUuKAzg05FpGWw';
 function doPost(event) {
   const params = (event && event.parameter) || {};
   const fullName = String(params.fullName || '').trim();
-  const guestCount = Number(params.guestCount || 0);
+  const guestCount = getValidGuestCount(params.guestCount);
   const submittedAt = params.submittedAt
     ? new Date(params.submittedAt)
     : new Date();
 
-  if (!fullName || !Number.isFinite(guestCount) || guestCount < 1) {
+  if (!fullName || !isValidGuestCount(guestCount)) {
     return jsonResponse({
       ok: false,
       message: 'Full name and guest count are required.',
@@ -43,6 +43,26 @@ function testDoPost() {
       submittedAt: new Date().toISOString(),
     },
   });
+}
+
+function getValidGuestCount(value) {
+  const rawValue = String(value === undefined ? '' : value).trim();
+
+  if (rawValue.toLowerCase() === 'not going') {
+    return 'not going';
+  }
+
+  const guestCount = Number(value === undefined || value === '' ? 1 : value);
+
+  if (!Number.isFinite(guestCount) || guestCount < 1) {
+    return 1;
+  }
+
+  return Math.max(1, Math.floor(guestCount));
+}
+
+function isValidGuestCount(value) {
+  return value === 'not going' || (Number.isFinite(value) && value >= 1);
 }
 
 function jsonResponse(payload) {
