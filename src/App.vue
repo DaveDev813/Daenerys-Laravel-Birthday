@@ -10,17 +10,11 @@ defineOptions({
   name: 'App'
 });
 
-const pageTitle = 'Daenerys Laravel Bobadilla | Christening & Birthday';
-const pageDescription = `
-  Hello everyone!
-  I’m turning one already, yay!
-  I may still be little, but my heart is full of love, and I would be so happy to celebrate my very special day with all of you.
-  On October 25, 2026, I will be having my Christening and celebrating my 1st Birthday too!
-  It will be a day full of love, blessings, laughter, and precious memories with my dear family and friends.
-  Mommy and Daddy are excited to welcome you as we celebrate this beautiful milestone in my life.
-`;
+const pageTitle = 'Daenerys Laravel Bobadilla | Christening & 1st Birthday RSVP';
+const pageDescription = 'Tap to RSVP for Daenerys Laravel Bobadilla\'s Christening and 1st Birthday celebration.';
 const pageUrl = 'https://daenerys-laravel.web.app/';
-const ogImageUrl = 'https://daenerys-laravel.web.app/og.jpg';
+const ogImageUrl = 'https://daenerys-laravel.web.app/og.jpg?v=20260510';
+const ogImageAlt = 'Daenerys Laravel Bobadilla RSVP christening and 1st birthday invitation';
 
 useMeta({
   title: pageTitle,
@@ -32,14 +26,25 @@ useMeta({
 
     // Open Graph / Facebook Messenger
     ogType: { property: 'og:type', content: 'website' },
+    ogLocale: { property: 'og:locale', content: 'en_US' },
+    ogSiteName: { property: 'og:site_name', content: 'Daenerys Laravel Bobadilla RSVP' },
     ogUrl: { property: 'og:url', content: pageUrl },
     ogTitle: { property: 'og:title', content: pageTitle },
     ogDescription: { property: 'og:description', content: pageDescription },
     ogImage: { property: 'og:image', content: ogImageUrl },
+    ogImageUrl: { property: 'og:image:url', content: ogImageUrl },
     ogImageSecureUrl: { property: 'og:image:secure_url', content: ogImageUrl },
     ogImageType: { property: 'og:image:type', content: 'image/jpeg' },
     ogImageWidth: { property: 'og:image:width', content: '1200' },
     ogImageHeight: { property: 'og:image:height', content: '630' },
+    ogImageAlt: { property: 'og:image:alt', content: ogImageAlt },
+
+    twitterCard: { name: 'twitter:card', content: 'summary_large_image' },
+    twitterUrl: { name: 'twitter:url', content: pageUrl },
+    twitterTitle: { name: 'twitter:title', content: pageTitle },
+    twitterDescription: { name: 'twitter:description', content: pageDescription },
+    twitterImage: { name: 'twitter:image', content: ogImageUrl },
+    twitterImageAlt: { name: 'twitter:image:alt', content: ogImageAlt },
 
     // Microsoft Tiles
     msTileColor: { name: 'msapplication-TileColor', content: '#faab53' },
@@ -76,6 +81,7 @@ useMeta({
 
     // Safari Pinned Tab Icon
     { rel: 'mask-icon', href: '/icons/safari-pinned-tab.svg', color: '#faab53' },
+    { rel: 'canonical', href: pageUrl },
 
     // Manifest File
     { rel: 'manifest', href: '/manifest.json' },

@@ -19,7 +19,6 @@ q-layout(view='lHh Lpr lFf')
 <script>
 import { defineComponent } from 'vue';
 import LogoImg from '../assets/images/logo/logo.png';
-import { useMeta } from 'quasar';
 import InstallPWAButton from 'components/InstallPWAButton.vue';
 
 export default defineComponent({
@@ -45,25 +44,6 @@ export default defineComponent({
       '%c API VERSION v' + process.env.API_VERSION + ' ',
       'background-color: #bb3a00; font-weight: bolder; color: #feb898'
     );
-
-    useMeta({
-      meta: {
-        ogTitle: {
-          property: 'og:title',
-          content: 'Daenerys Laravel Bobadilla -Christening & Birthday | Portfolio',
-        },
-        ogDescription: {
-          property: 'og:description',
-          content:
-            'Daenerys Laravel Bobadilla -Christening & Birthday',
-        },
-        ogImage: {
-          property: 'og:image',
-          content:
-            '/assets/images/og.jpg',
-        },
-      },
-    });
 
     return {};
   },
