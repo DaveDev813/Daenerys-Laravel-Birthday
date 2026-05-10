@@ -16,6 +16,7 @@
   button.birthday-section-two__option.birthday-section-two__option--decline(
     type='button'
     aria-label='Sorry, I cannot join'
+    :disabled='isSubmittingDeclineForm'
     @click='handleDeclineClick'
   )
   .birthday-rsvp-popup(
@@ -99,6 +100,7 @@
     .birthday-rsvp-popup__panel.birthday-rsvp-popup__panel--message
       h2#birthday-rsvp-decline-title.birthday-rsvp-popup__title.q-ma-none Baby Lara is going to miss you!
       .text-subtitle2 Feel free to submit your RSVP again if you change your mind.
+      p.birthday-rsvp-popup__error(v-if='declineFormError') {{ declineFormError }}
       img(
         :src='sadImg'
         style='width: 100%; margin: 0 auto;'
@@ -123,7 +125,9 @@ const isJoinPopupOpen = ref(false);
 const isThankYouPopupOpen = ref(false);
 const isDeclinePopupOpen = ref(false);
 const isSubmittingJoinForm = ref(false);
+const isSubmittingDeclineForm = ref(false);
 const joinFormError = ref('');
+const declineFormError = ref('');
 const googleSheetId = '1ZhRPpUreSLnTPRMP8yWRJNpk5hQVoaUuKAzg05FpGWw';
 const birthdayRsvpWebAppUrl = process.env.BIRTHDAY_RSVP_WEB_APP_URL || '';
 const sectionTwoStyle = {
@@ -248,16 +252,15 @@ const handleJoinSubmit = async () => {
 };
 
 const handleDeclineClick = async () => {
-  if (!defaultFullName) {
-    return;
-  }
-
-  await submitRsvpToGoogleSheet({
-    fullName: defaultFullName,
-    guestCount: 'not going',
-  });
-
+  const declineFullName = defaultFullName || fullName.value.trim();
   isDeclinePopupOpen.value = true;
+
+  if (declineFullName) {
+    submitRsvpToGoogleSheet({
+      fullName: declineFullName,
+      guestCount: 'not going',
+    });
+  }
 };
 
 onMounted(() => {

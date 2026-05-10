@@ -1,4 +1,5 @@
 const SPREADSHEET_ID = '1ZhRPpUreSLnTPRMP8yWRJNpk5hQVoaUuKAzg05FpGWw';
+const SCRIPT_VERSION = '2026-05-10-not-going-v1';
 
 function doPost(event) {
   const params = (event && event.parameter) || {};
@@ -11,6 +12,7 @@ function doPost(event) {
   if (!fullName || !isValidGuestCount(guestCount)) {
     return jsonResponse({
       ok: false,
+      version: SCRIPT_VERSION,
       message: 'Full name and guest count are required.',
     });
   }
@@ -26,12 +28,16 @@ function doPost(event) {
 
   return jsonResponse({
     ok: true,
+    version: SCRIPT_VERSION,
+    guestCount,
   });
 }
 
 function doGet() {
   return jsonResponse({
     ok: true,
+    version: SCRIPT_VERSION,
+    acceptsNotGoing: true,
   });
 }
 
@@ -40,6 +46,16 @@ function testDoPost() {
     parameter: {
       fullName: 'Test Guest',
       guestCount: '1',
+      submittedAt: new Date().toISOString(),
+    },
+  });
+}
+
+function testDeclineDoPost() {
+  return doPost({
+    parameter: {
+      fullName: 'Test Decline Guest',
+      guestCount: 'not going',
       submittedAt: new Date().toISOString(),
     },
   });
