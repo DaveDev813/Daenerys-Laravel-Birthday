@@ -18,6 +18,10 @@ q-page.birthday-page
           aria-label='Loading birthday section'
         )
           .birthday-spinner
+  img.scroll-down-indicator(
+    :src='scrollDownImage'
+    alt='Scroll down'
+  )
 
 </template>
 
@@ -31,6 +35,7 @@ import {
   ref,
   shallowReactive,
 } from 'vue';
+import scrollDownImage from '../assets/images/scroll_down.png';
 
 const isMobileViewport = ref(false);
 const isLandscapeViewport = ref(false);
@@ -318,5 +323,37 @@ onBeforeUnmount(() => {
   margin: 0;
   padding: 0;
   border: none;
+}
+
+.scroll-down-indicator {
+  position: fixed;
+  left: 90%;
+  bottom: -89px;
+  z-index: 20;
+  width: 100px;
+  height: auto;
+  pointer-events: none;
+  filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.28));
+  transform: translate3d(-50%, 0, 0);
+  animation: scroll-down-indicator-bounce 1.35s ease-in-out infinite;
+  will-change: transform;
+}
+
+@keyframes scroll-down-indicator-bounce {
+
+  0%,
+  100% {
+    transform: translate3d(-50%, 0, 0);
+  }
+
+  50% {
+    transform: translate3d(-50%, -12px, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scroll-down-indicator {
+    animation: none;
+  }
 }
 </style>

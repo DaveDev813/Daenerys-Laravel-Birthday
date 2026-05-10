@@ -39,3 +39,8 @@ yarn-error.log*
 
 # PDF WORKER
 /public/pdf.worker.mjs
+
+# firebase
+/firebase-debug.log
+/.firebase/hosting.*
+
