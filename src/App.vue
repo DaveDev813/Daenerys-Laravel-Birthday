@@ -5,39 +5,46 @@
 <script setup>
 
 import { useMeta } from 'quasar';
-import ogImage from './assets/images/og.jpg';
 
 defineOptions({
   name: 'App'
 });
 
 const pageTitle = 'Daenerys Laravel Bobadilla | Christening & Birthday';
-const pageDescription = 'Daenerys Laravel Bobadilla | Christening & Birthday';
-const ogImageUrl =
-  typeof window === 'undefined'
-    ? ogImage
-    : new URL(ogImage, window.location.origin).href;
+const pageDescription = `
+  Hello everyone!
+  I’m turning one already, yay!
+  I may still be little, but my heart is full of love, and I would be so happy to celebrate my very special day with all of you.
+  On October 25, 2026, I will be having my Christening and celebrating my 1st Birthday too!
+  It will be a day full of love, blessings, laughter, and precious memories with my dear family and friends.
+  Mommy and Daddy are excited to welcome you as we celebrate this beautiful milestone in my life.
+`;
+const pageUrl = 'https://daenerys-laravel.web.app/';
+const ogImageUrl = 'https://daenerys-laravel.web.app/og.jpg';
 
 useMeta({
   title: pageTitle,
-  meta: [
+  meta: {
     // General Meta Tags
-    { charset: 'utf-8' },
-    { name: 'description', content: pageDescription },
-    { name: 'viewport', content: 'width=device-width, initial-scale=1, viewport-fit=cover' },
+    charset: { charset: 'utf-8' },
+    description: { name: 'description', content: pageDescription },
+    viewport: { name: 'viewport', content: 'width=device-width, initial-scale=1, viewport-fit=cover' },
 
     // Open Graph / Facebook Messenger
-    { property: 'og:type', content: 'website' },
-    { property: 'og:title', content: pageTitle },
-    { property: 'og:description', content: pageDescription },
-    { property: 'og:image', content: ogImageUrl },
-    { property: 'og:image:secure_url', content: ogImageUrl },
-    { property: 'og:image:type', content: 'image/jpeg' },
+    ogType: { property: 'og:type', content: 'website' },
+    ogUrl: { property: 'og:url', content: pageUrl },
+    ogTitle: { property: 'og:title', content: pageTitle },
+    ogDescription: { property: 'og:description', content: pageDescription },
+    ogImage: { property: 'og:image', content: ogImageUrl },
+    ogImageSecureUrl: { property: 'og:image:secure_url', content: ogImageUrl },
+    ogImageType: { property: 'og:image:type', content: 'image/jpeg' },
+    ogImageWidth: { property: 'og:image:width', content: '1200' },
+    ogImageHeight: { property: 'og:image:height', content: '630' },
 
     // Microsoft Tiles
-    { name: 'msapplication-TileColor', content: '#faab53' },
-    { name: 'msapplication-TileImage', content: '/icons/ms-icon-144x144.png' },
-  ],
+    msTileColor: { name: 'msapplication-TileColor', content: '#faab53' },
+    msTileImage: { name: 'msapplication-TileImage', content: '/icons/ms-icon-144x144.png' },
+  },
   link: [
     // Favicons
     { rel: 'icon', type: 'image/png', sizes: '16x16', href: '/icons/favicon-16x16.png' },
