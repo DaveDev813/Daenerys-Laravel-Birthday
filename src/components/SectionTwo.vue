@@ -28,7 +28,7 @@
     form.birthday-rsvp-popup__panel(@submit.prevent='handleJoinSubmit')
       h2#birthday-rsvp-title.birthday-rsvp-popup__title Join us
       label.birthday-rsvp-popup__field
-        span Full name
+        span Guest Full Name
         input(
           v-model='fullName'
           type='text'
@@ -37,7 +37,7 @@
           required
         )
       .birthday-rsvp-popup__field
-        label(for='guestCount') Number of Guest comming
+        label(for='guestCount') Number of Guest(s) Comming
         .birthday-rsvp-popup__guest-count
           input#guestCount(
             v-model='guestCount'
@@ -70,7 +70,7 @@
         button.birthday-rsvp-popup__button.birthday-rsvp-popup__button--primary(
           type='submit'
           :disabled='isSubmittingJoinForm'
-        ) {{ isSubmittingJoinForm ? 'Submitting...' : 'Submit' }}
+        ) {{ isSubmittingJoinForm ? 'Baby Lara is Reading...' : 'Join' }}
   .birthday-rsvp-popup(
     v-if='isThankYouPopupOpen'
     role='dialog'
@@ -80,6 +80,10 @@
   )
     .birthday-rsvp-popup__panel.birthday-rsvp-popup__panel--message
       h2#birthday-rsvp-thanks-title.birthday-rsvp-popup__title Thank you and see you there!
+      img(
+        :src='thanksImg'
+        style='width: 100%; margin: 0 auto;'
+      )
       button.birthday-rsvp-popup__button.birthday-rsvp-popup__button--primary(
         type='button'
         @click='closeThankYouPopup'
@@ -91,6 +95,7 @@ import { computed, onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import bg1Url from 'src/assets/images/bg/bg1.png';
 import sectionTwoUrl from 'src/assets/images/section2.png';
+import thanksImg from 'src/assets/images/ty.jpg';
 
 const route = useRoute();
 const isImageVisible = ref(false);
@@ -312,6 +317,7 @@ onMounted(() => {
 }
 
 .birthday-rsvp-popup__title {
+  font-family: cursive;
   margin: 0 0 18px;
   font-family: Georgia, 'Times New Roman', serif;
   font-size: 24px;
