@@ -12,7 +12,7 @@ q-layout(view='lHh Lpr lFf')
     q-toolbar
       q-toolbar-title.text-secondary
         #footer.text-left.q-pr-md
-          | Rodave Joseph Bobadilla - Portfolio
+          | Daenerys Laravel Bobadilla -Christening & Birthday
 
 </template>
 
@@ -50,12 +50,12 @@ export default defineComponent({
       meta: {
         ogTitle: {
           property: 'og:title',
-          content: 'Rodave Joseph Bobadilla | Portfolio',
+          content: 'Daenerys Laravel Bobadilla -Christening & Birthday | Portfolio',
         },
         ogDescription: {
           property: 'og:description',
           content:
-            'Rodave Joseph Bobadilla - Portfolio',
+            'Daenerys Laravel Bobadilla -Christening & Birthday',
         },
         ogImage: {
           property: 'og:image',

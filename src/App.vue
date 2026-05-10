@@ -5,18 +5,34 @@
 <script setup>
 
 import { useMeta } from 'quasar';
+import ogImage from './assets/images/og.jpg';
 
 defineOptions({
   name: 'App'
 });
 
+const pageTitle = 'Daenerys Laravel Bobadilla | Christening & Birthday';
+const pageDescription = 'Daenerys Laravel Bobadilla | Christening & Birthday';
+const ogImageUrl =
+  typeof window === 'undefined'
+    ? ogImage
+    : new URL(ogImage, window.location.origin).href;
+
 useMeta({
-  title: 'Daenerys Laravel Bobadilla | Christening & Birthday',
+  title: pageTitle,
   meta: [
     // General Meta Tags
     { charset: 'utf-8' },
-    { name: 'description', content: 'Daenerys Laravel Bobadilla | Christening & Birthday' },
+    { name: 'description', content: pageDescription },
     { name: 'viewport', content: 'width=device-width, initial-scale=1, viewport-fit=cover' },
+
+    // Open Graph / Facebook Messenger
+    { property: 'og:type', content: 'website' },
+    { property: 'og:title', content: pageTitle },
+    { property: 'og:description', content: pageDescription },
+    { property: 'og:image', content: ogImageUrl },
+    { property: 'og:image:secure_url', content: ogImageUrl },
+    { property: 'og:image:type', content: 'image/jpeg' },
 
     // Microsoft Tiles
     { name: 'msapplication-TileColor', content: '#faab53' },
