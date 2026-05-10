@@ -43,9 +43,14 @@ module.exports = configure(function (/* ctx */) {
 
     // Full list of options: https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#build
     build: {
-      env: require('dotenv').config({
-        path: path.resolve(__dirname, '../.env.frontend'),
-      }).parsed,
+      env:
+        dotenv.config({
+          path: path.resolve(__dirname, '.env.frontend'),
+        }).parsed ||
+        dotenv.config({
+          path: path.resolve(__dirname, '../.env.frontend'),
+        }).parsed ||
+        {},
 
       target: {
         browser: ['es2019', 'edge88', 'firefox78', 'chrome87', 'safari13.1'],

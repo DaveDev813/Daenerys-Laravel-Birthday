@@ -34,9 +34,12 @@ import {
   onMounted,
   ref,
   shallowReactive,
+  watch,
 } from 'vue';
+import { useRoute } from 'vue-router';
 import scrollDownImage from '../assets/images/scroll_down.png';
 
+const route = useRoute();
 const isMobileViewport = ref(false);
 const isLandscapeViewport = ref(false);
 const stageRef = ref(null);
@@ -50,6 +53,7 @@ const sectionNameCollator = new Intl.Collator(undefined, {
   sensitivity: 'base',
 });
 const sectionNumberNames = new Map([
+  ['zero', 0],
   ['one', 1],
   ['two', 2],
   ['three', 3],
@@ -99,7 +103,18 @@ const getSectionOrder = (sectionId) => {
   return sectionNumberNames.get(sectionId) ?? Number.MAX_SAFE_INTEGER;
 };
 
-const birthdaySections = Object.entries(sectionComponentModules)
+const getGuestName = () => {
+  const queryName = route.query.n;
+  const queryValue = Array.isArray(queryName)
+    ? queryName.find((value) => typeof value === 'string' && value.trim())
+    : queryName;
+
+  return typeof queryValue === 'string' ? queryValue.trim() : '';
+};
+
+const hasGuestName = computed(() => getGuestName() !== '');
+
+const allBirthdaySections = Object.entries(sectionComponentModules)
   .map(([path, loader]) => ({
     id: getSectionId(path),
     path,
@@ -118,6 +133,12 @@ const birthdaySections = Object.entries(sectionComponentModules)
       getFileName(sectionB.path)
     );
   });
+
+const birthdaySections = computed(() =>
+  allBirthdaySections.filter(
+    (section) => section.id !== 'zero' || hasGuestName.value
+  )
+);
 
 const setSectionRef = (sectionId, sectionElement) => {
   if (sectionElement) {
@@ -215,11 +236,11 @@ const loadSectionIfVisible = (section) => {
 };
 
 const handleStageScroll = () => {
-  birthdaySections.forEach(loadSectionIfVisible);
+  birthdaySections.value.forEach(loadSectionIfVisible);
 };
 
 const getSectionByElement = (sectionElement) => {
-  return birthdaySections.find(
+  return birthdaySections.value.find(
     (section) => sectionElements.get(section.id) === sectionElement
   );
 };
@@ -241,7 +262,7 @@ const handleSectionIntersection = (entries) => {
 };
 
 const initSectionLoading = () => {
-  const allSectionElementsReady = birthdaySections.every((section) =>
+  const allSectionElementsReady = birthdaySections.value.every((section) =>
     sectionElements.has(section.id)
   );
 
@@ -255,7 +276,7 @@ const initSectionLoading = () => {
       rootMargin: '200% 0px',
       threshold: 0.01,
     });
-    birthdaySections.forEach((section) => {
+    birthdaySections.value.forEach((section) => {
       sectionObserver.observe(sectionElements.get(section.id));
     });
     return;
@@ -265,6 +286,15 @@ const initSectionLoading = () => {
   stageRef.value.addEventListener('scroll', handleStageScroll, {
     passive: true,
   });
+};
+
+const resetSectionLoading = async () => {
+  sectionObserver?.disconnect();
+  sectionObserver = null;
+  stageRef.value?.removeEventListener('scroll', handleStageScroll);
+
+  await nextTick();
+  initSectionLoading();
 };
 
 onMounted(async () => {
@@ -286,6 +316,13 @@ onMounted(async () => {
   await nextTick();
   initSectionLoading();
 });
+
+watch(
+  () => birthdaySections.value.map((section) => section.id).join('|'),
+  () => {
+    void resetSectionLoading();
+  }
+);
 
 onBeforeUnmount(() => {
   window.removeEventListener('resize', updateViewportState);
