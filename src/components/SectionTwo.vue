@@ -75,21 +75,34 @@
 
 <script setup>
 import { onMounted, ref } from 'vue';
+import { useRoute } from 'vue-router';
 import bg1Url from 'src/assets/images/bg/bg1.png';
 import sectionTwoUrl from 'src/assets/images/section2.png';
 
+const route = useRoute();
 const isImageVisible = ref(false);
 const isJoinPopupOpen = ref(false);
 const isThankYouPopupOpen = ref(false);
 const isSubmittingJoinForm = ref(false);
-const fullName = ref('');
-const guestCount = ref('');
 const joinFormError = ref('');
 const googleSheetId = '1ZhRPpUreSLnTPRMP8yWRJNpk5hQVoaUuKAzg05FpGWw';
 const birthdayRsvpWebAppUrl = process.env.BIRTHDAY_RSVP_WEB_APP_URL || '';
 const sectionTwoStyle = {
   backgroundImage: `url(${bg1Url})`,
 };
+
+const getDefaultFullName = () => {
+  const nameFromQuery = route.query.n;
+  const queryValue = Array.isArray(nameFromQuery)
+    ? nameFromQuery.find((value) => typeof value === 'string' && value.trim())
+    : nameFromQuery;
+
+  return typeof queryValue === 'string' ? queryValue.trim() : '';
+};
+
+const defaultFullName = getDefaultFullName();
+const fullName = ref(defaultFullName);
+const guestCount = ref(defaultFullName ? '1' : '');
 
 const handleJoinClick = () => {
   joinFormError.value = '';
