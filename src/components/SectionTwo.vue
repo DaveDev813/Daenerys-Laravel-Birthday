@@ -248,17 +248,15 @@ const handleJoinSubmit = async () => {
 };
 
 const handleDeclineClick = async () => {
-  if (!defaultFullName) {
-    return;
-  }
 
   isDeclinePopupOpen.value = true;
 
-  submitRsvpToGoogleSheet({
-    fullName: defaultFullName,
-    guestCount: 'not going',
-  });
-
+  if (defaultFullName) {
+    submitRsvpToGoogleSheet({
+      fullName: defaultFullName,
+      guestCount: 'not going',
+    });
+  }
 };
 
 onMounted(() => {
