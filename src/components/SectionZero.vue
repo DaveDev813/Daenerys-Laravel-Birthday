@@ -48,7 +48,7 @@ const guestName = computed(() => {
 
 .birthday-section-zero__name {
   transform: rotate(-9deg);
-  width: min(82vw, 560px);
+  width: 308.016px;
   aspect-ratio: 3 / 2;
   margin: 0;
   padding: 81px 21px 0;
