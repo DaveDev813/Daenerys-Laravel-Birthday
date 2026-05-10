@@ -4,7 +4,7 @@
 )
   .birthday-section-zero__name(:style='nameStyle')
     .letterTo Letter to:
-    div
+    .text-capitalize
      | {{ guestName }}
 </template>
 
@@ -51,22 +51,23 @@ const guestName = computed(() => {
   width: min(82vw, 560px);
   aspect-ratio: 3 / 2;
   margin: 0;
-  padding: 115px 21px 0;
+  padding: 81px 21px 0;
   background-position: center;
   background-repeat: no-repeat;
   background-size: contain;
   overflow-wrap: anywhere;
   color: #af2e43;
   font-family: cursive;
-  font-size: 42px;
+  font-size: 35px;
   font-weight: 700;
   line-height: 1.12;
 
   .letterTo {
+    font-weight: bolder;
+    margin-right: 176px;
     display: block;
     margin-bottom: 8px;
     font-size: 18px;
-    font-weight: 400;
     color: #6d2b35;
   }
 }
