@@ -252,11 +252,13 @@ const handleDeclineClick = async () => {
     return;
   }
 
-  await submitRsvpToGoogleSheet({
+  isDeclinePopupOpen.value = true;
+
+  submitRsvpToGoogleSheet({
     fullName: defaultFullName,
     guestCount: 'not going',
   });
-  isDeclinePopupOpen.value = true;
+
 };
 
 onMounted(() => {
