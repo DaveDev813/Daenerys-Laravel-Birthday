@@ -1,5 +1,5 @@
 <template lang="pug">
-q-layout
+q-layout(:class="$q.platform.is.mobile ? 'isMobile' : ''")
   q-page-container
     router-view
 </template>
