@@ -115,6 +115,9 @@ const getGuestName = () => {
 };
 
 const hasGuestName = computed(() => getGuestName() !== '');
+const hasGodparentsParam = computed(() =>
+  Object.prototype.hasOwnProperty.call(route.query, 'isgp')
+);
 
 const allBirthdaySections = Object.entries(sectionComponentModules)
   .map(([path, loader]) => ({
@@ -138,7 +141,9 @@ const allBirthdaySections = Object.entries(sectionComponentModules)
 
 const birthdaySections = computed(() =>
   allBirthdaySections.filter(
-    (section) => section.id !== 'letter' || hasGuestName.value
+    (section) =>
+      (section.id !== 'letter' || hasGuestName.value) &&
+      (section.id !== 'godparents' || hasGodparentsParam.value)
   )
 );
 
