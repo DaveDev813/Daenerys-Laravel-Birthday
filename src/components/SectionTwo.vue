@@ -21,14 +21,15 @@ import bg1Url from 'src/assets/images/bg/bg1.png';
 const sectionRef = ref(null);
 const playerRef = ref(null);
 const isSoundButtonVisible = ref(false);
-const youtubeShortId = 'DB0qEwxM0rQ';
+const youtubeShortId = 'XEHqESRW6Rg';
 const sectionThreeStyle = {
   backgroundImage: `url(${bg1Url})`,
 };
 let sectionObserver = null;
 let youtubePlayer = null;
-let hasRequestedPlayback = false;
+let shouldPlayWhenReady = false;
 let hasEnabledSound = false;
+let shouldUseMutedPlayback = false;
 let autoplayFallbackTimeout = null;
 
 const loadYouTubeApi = () => {
@@ -85,17 +86,18 @@ const isPlayerPlaying = () => {
 };
 
 const playShortMuted = () => {
-  if (!youtubePlayer) {
+  if (!youtubePlayer || !shouldPlayWhenReady) {
     return;
   }
 
+  shouldUseMutedPlayback = true;
   youtubePlayer.mute();
   youtubePlayer.playVideo();
   isSoundButtonVisible.value = !hasEnabledSound;
 };
 
 const playShortWithSound = () => {
-  if (!youtubePlayer) {
+  if (!youtubePlayer || !shouldPlayWhenReady) {
     return;
   }
 
@@ -106,9 +108,7 @@ const playShortWithSound = () => {
 };
 
 const playShort = () => {
-  hasRequestedPlayback = true;
-  sectionObserver?.disconnect();
-  sectionObserver = null;
+  shouldPlayWhenReady = true;
 
   if (!youtubePlayer) {
     return;
@@ -119,13 +119,29 @@ const playShort = () => {
     return;
   }
 
+  if (shouldUseMutedPlayback) {
+    playShortMuted();
+    return;
+  }
+
   playShortWithSound();
   clearAutoplayFallback();
   autoplayFallbackTimeout = window.setTimeout(() => {
-    if (!isPlayerPlaying() && !hasEnabledSound) {
+    if (shouldPlayWhenReady && !isPlayerPlaying() && !hasEnabledSound) {
       playShortMuted();
     }
   }, 700);
+};
+
+const pauseShort = () => {
+  shouldPlayWhenReady = false;
+  clearAutoplayFallback();
+
+  if (!youtubePlayer) {
+    return;
+  }
+
+  youtubePlayer.pauseVideo();
 };
 
 const enableSound = () => {
@@ -133,7 +149,9 @@ const enableSound = () => {
     return;
   }
 
+  shouldPlayWhenReady = true;
   hasEnabledSound = true;
+  shouldUseMutedPlayback = false;
   clearAutoplayFallback();
   playShortWithSound();
 };
@@ -200,7 +218,7 @@ const createPlayer = async () => {
             'strict-origin-when-cross-origin'
           );
 
-          if (hasRequestedPlayback) {
+          if (shouldPlayWhenReady) {
             playShort();
           }
         },
@@ -210,6 +228,10 @@ const createPlayer = async () => {
           }
         },
         onAutoplayBlocked: () => {
+          if (!shouldPlayWhenReady) {
+            return;
+          }
+
           playShortMuted();
           isSoundButtonVisible.value = true;
         },
@@ -242,17 +264,20 @@ onMounted(() => {
 
   sectionObserver = new IntersectionObserver(
     (entries) => {
-      const isSectionInView = entries.some(
+      const sectionIsInView = entries.some(
         (entry) => entry.isIntersecting && entry.intersectionRatio >= 0.5
       );
 
-      if (isSectionInView) {
+      if (sectionIsInView) {
         playShort();
+        return;
       }
+
+      pauseShort();
     },
     {
       root: sectionElement.closest('.birthday-stage'),
-      threshold: [0.5],
+      threshold: [0, 0.5],
     }
   );
 
