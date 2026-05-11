@@ -17,6 +17,7 @@ const routes: RouteRecordRaw[] = [
     component: () => import('layouts/MainLayout.vue'),
     children: [
       { path: '', component: () => import('src/pages/IndexPage.vue') },
+      { path: 'invite', component: () => import('src/pages/IndexPage.vue') },
     ],
   },
   {

@@ -12,7 +12,7 @@ defineOptions({
 
 const pageTitle = 'Daenerys Laravel Bobadilla | Christening & 1st Birthday RSVP';
 const pageDescription = 'Tap to RSVP for Daenerys Laravel Bobadilla\'s Christening and 1st Birthday celebration.';
-const pageUrl = 'https://daenerys-laravel.web.app/';
+const pageUrl = 'https://daenerys-laravel.web.app/invite/';
 const ogImageUrl = 'https://daenerys-laravel.web.app/og-20260510.jpg';
 const ogImageAlt = 'Daenerys Laravel Bobadilla RSVP christening and 1st birthday invitation';
 
