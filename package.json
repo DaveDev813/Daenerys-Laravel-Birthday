@@ -10,7 +10,7 @@
     "format": "prettier --write \"**/*.{js,ts,vue,scss,html,md,json}\" --ignore-path .gitignore",
     "test": "echo \"No test specified\" && exit 0",
     "dev": "quasar dev",
-    "build": "quasar build",
+    "build": "quasar build && node scripts/create-static-pages.mjs",
     "devpwa": "quasar dev -m pwa",
     "buildpwa": "quasar build -m pwa",
     "optimize:images": "node scripts/optimize-images.mjs",

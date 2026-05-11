@@ -38,7 +38,7 @@
           required
         )
       .birthday-rsvp-popup__field
-        label(for='guestCount') Number of Guest(s) Comming
+        label(for='guestCount') Number of Adult(s) Comming Ages 11 above
         .birthday-rsvp-popup__guest-count
           input#guestCount(
             v-model='guestCount'
@@ -61,6 +61,31 @@
               aria-label='Decrease guest count'
               :disabled='isGuestCountAtMinimum'
               @click='decreaseGuestCount'
+            )
+      .birthday-rsvp-popup__field
+        label(for='kidsCount') Number of kids(s) Comming Ages 1-10
+        .birthday-rsvp-popup__guest-count
+          input#kidsCount(
+            v-model='kidsCount'
+            type='number'
+            name='kidsCount'
+            min='0'
+            step='1'
+            inputmode='numeric'
+            required
+            @input='normalizeKidsCount'
+          )
+          .birthday-rsvp-popup__guest-count-actions
+            button.birthday-rsvp-popup__guest-count-button.birthday-rsvp-popup__guest-count-button--up(
+              type='button'
+              aria-label='Increase kids count'
+              @click='increaseKidsCount'
+            )
+            button.birthday-rsvp-popup__guest-count-button.birthday-rsvp-popup__guest-count-button--down(
+              type='button'
+              aria-label='Decrease kids count'
+              :disabled='isKidsCountAtMinimum'
+              @click='decreaseKidsCount'
             )
       p.birthday-rsvp-popup__error(v-if='joinFormError') {{ joinFormError }}
       .birthday-rsvp-popup__actions
@@ -146,7 +171,9 @@ const getDefaultFullName = () => {
 const defaultFullName = getDefaultFullName();
 const fullName = ref(defaultFullName);
 const guestCount = ref('1');
+const kidsCount = ref('0');
 const isGuestCountAtMinimum = computed(() => Number(guestCount.value) <= 1);
+const isKidsCountAtMinimum = computed(() => Number(kidsCount.value) <= 0);
 
 const getCurrentGuestCount = () => {
   const parsedGuestCount = Number(guestCount.value);
@@ -156,16 +183,36 @@ const getCurrentGuestCount = () => {
     : 1;
 };
 
+const getCurrentKidsCount = () => {
+  const parsedKidsCount = Number(kidsCount.value);
+
+  return Number.isFinite(parsedKidsCount) && parsedKidsCount >= 0
+    ? Math.floor(parsedKidsCount)
+    : 0;
+};
+
 const normalizeGuestCount = () => {
   guestCount.value = String(getCurrentGuestCount());
+};
+
+const normalizeKidsCount = () => {
+  kidsCount.value = String(getCurrentKidsCount());
 };
 
 const increaseGuestCount = () => {
   guestCount.value = String(getCurrentGuestCount() + 1);
 };
 
+const increaseKidsCount = () => {
+  kidsCount.value = String(getCurrentKidsCount() + 1);
+};
+
 const decreaseGuestCount = () => {
   guestCount.value = String(Math.max(1, getCurrentGuestCount() - 1));
+};
+
+const decreaseKidsCount = () => {
+  kidsCount.value = String(Math.max(0, getCurrentKidsCount() - 1));
 };
 
 const handleJoinClick = () => {
@@ -192,10 +239,12 @@ const closeDeclinePopup = () => {
 const getValidatedRsvp = () => {
   const trimmedFullName = fullName.value.trim();
   const parsedGuestCount = getCurrentGuestCount();
+  const parsedKidsCount = getCurrentKidsCount();
 
   if (
     !trimmedFullName ||
-    parsedGuestCount < 1
+    parsedGuestCount < 1 ||
+    parsedKidsCount < 0
   ) {
     throw new Error('Please complete all required fields.');
   }
@@ -203,6 +252,7 @@ const getValidatedRsvp = () => {
   return {
     fullName: trimmedFullName,
     guestCount: parsedGuestCount,
+    kidsCount: parsedKidsCount,
   };
 };
 
@@ -215,6 +265,7 @@ const submitRsvpToGoogleSheet = async (rsvp) => {
     spreadsheetId: googleSheetId,
     fullName: rsvp.fullName,
     guestCount: String(rsvp.guestCount),
+    kidsCount: String(rsvp.kidsCount ?? 0),
     submittedAt: new Date().toISOString(),
   });
 
@@ -228,6 +279,7 @@ const submitRsvpToGoogleSheet = async (rsvp) => {
 const resetJoinForm = () => {
   fullName.value = '';
   guestCount.value = '1';
+  kidsCount.value = '0';
   joinFormError.value = '';
 };
 
@@ -259,6 +311,7 @@ const handleDeclineClick = async () => {
     submitRsvpToGoogleSheet({
       fullName: declineFullName,
       guestCount: 'not going',
+      kidsCount: 0,
     });
   }
 };

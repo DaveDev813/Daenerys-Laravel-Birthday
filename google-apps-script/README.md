@@ -15,4 +15,5 @@ This Quasar project loads frontend env values from `.env.frontend` in the projec
 When updating an existing web app, use `Deploy` > `Manage deployments`, edit
 the active deployment, choose `New version`, then deploy. Opening the `/exec`
 URL should return a JSON response with `acceptsNotGoing: true` after the
-decline RSVP version is live.
+decline RSVP version is live. The kids count version also returns
+`acceptsKidsCount: true`.

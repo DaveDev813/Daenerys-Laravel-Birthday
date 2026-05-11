@@ -82,9 +82,6 @@ useMeta({
     // Safari Pinned Tab Icon
     { rel: 'mask-icon', href: '/icons/safari-pinned-tab.svg', color: '#faab53' },
     { rel: 'canonical', href: pageUrl },
-
-    // Manifest File
-    { rel: 'manifest', href: '/manifest.json' },
   ],
 });
 </script>

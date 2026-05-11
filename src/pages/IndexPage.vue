@@ -362,9 +362,20 @@ onBeforeUnmount(() => {
   border: none;
 }
 
+.mobile {
+  .scroll-down-indicator {
+    left: 90%;
+  }
+}
+
+.desktop {
+  .scroll-down-indicator {
+    left: 50%;
+  }
+}
+
 .scroll-down-indicator {
   position: fixed;
-  left: 90%;
   bottom: -89px;
   z-index: 20;
   width: 100px;

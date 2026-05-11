@@ -1,8 +1,9 @@
 {
   "hosting": {
-    "public": "dist/pwa",
-    "predeploy": ["npm run buildpwa"],
+    "public": "dist/spa",
+    "predeploy": ["npm run build"],
     "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+    "cleanUrls": true,
     "headers": [
       {
         "source": "/",
@@ -24,6 +25,15 @@
       },
       {
         "source": "/invite",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "public, max-age=0, must-revalidate"
+          }
+        ]
+      },
+      {
+        "source": "/invite/index.html",
         "headers": [
           {
             "key": "Cache-Control",
@@ -57,12 +67,6 @@
             "value": "public, max-age=3600"
           }
         ]
-      }
-    ],
-    "rewrites": [
-      {
-        "source": "**",
-        "destination": "/index.html"
       }
     ]
   }
