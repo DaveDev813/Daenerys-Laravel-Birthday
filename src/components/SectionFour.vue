@@ -1,23 +1,319 @@
 <template lang="pug">
-.full-width.full-height.birthday-section-frame.birthday-section-one(
-  :style='sectionOneStyle'
+.full-width.full-height.birthday-section-frame.birthday-section-two(
+  :style='sectionTwoStyle'
 )
-  img.birthday-section-one__image(
-    :src='sectionOneUrl'
-    :class='{ "birthday-section-one__image--visible": isImageVisible }'
+  img.birthday-section-two__image(
+    :src='sectionTwoUrl'
+    :class='{ "birthday-section-two__image--visible": isImageVisible }'
     alt=''
     aria-hidden='true'
   )
+  button.birthday-section-two__option.birthday-section-two__option--join(
+    type='button'
+    aria-label='I love to come'
+    @click='handleJoinClick'
+  )
+  button.birthday-section-two__option.birthday-section-two__option--decline(
+    type='button'
+    aria-label='Sorry, I cannot join'
+    :disabled='isSubmittingDeclineForm'
+    @click='handleDeclineClick'
+  )
+  .birthday-rsvp-popup(
+    v-if='isJoinPopupOpen'
+    role='dialog'
+    aria-modal='true'
+    aria-labelledby='birthday-rsvp-title'
+    @click.self='closeJoinPopup'
+  )
+    form.birthday-rsvp-popup__panel(@submit.prevent='handleJoinSubmit')
+      h2#birthday-rsvp-title.birthday-rsvp-popup__title Join us
+      label.birthday-rsvp-popup__field
+        span Guest Full Name
+        input(
+          v-model='fullName'
+          type='text'
+          name='fullName'
+          autocomplete='name'
+          required
+        )
+      .birthday-rsvp-popup__field
+        label(for='guestCount') Number of Adult(s) Comming Ages 11 above
+        .birthday-rsvp-popup__guest-count
+          input#guestCount(
+            v-model='guestCount'
+            type='number'
+            name='guestCount'
+            min='1'
+            step='1'
+            inputmode='numeric'
+            required
+            @input='normalizeGuestCount'
+          )
+          .birthday-rsvp-popup__guest-count-actions
+            button.birthday-rsvp-popup__guest-count-button.birthday-rsvp-popup__guest-count-button--up(
+              type='button'
+              aria-label='Increase guest count'
+              @click='increaseGuestCount'
+            )
+            button.birthday-rsvp-popup__guest-count-button.birthday-rsvp-popup__guest-count-button--down(
+              type='button'
+              aria-label='Decrease guest count'
+              :disabled='isGuestCountAtMinimum'
+              @click='decreaseGuestCount'
+            )
+      .birthday-rsvp-popup__field
+        label(for='kidsCount') Number of kids(s) Comming Ages 1-10
+        .birthday-rsvp-popup__guest-count
+          input#kidsCount(
+            v-model='kidsCount'
+            type='number'
+            name='kidsCount'
+            min='0'
+            step='1'
+            inputmode='numeric'
+            required
+            @input='normalizeKidsCount'
+          )
+          .birthday-rsvp-popup__guest-count-actions
+            button.birthday-rsvp-popup__guest-count-button.birthday-rsvp-popup__guest-count-button--up(
+              type='button'
+              aria-label='Increase kids count'
+              @click='increaseKidsCount'
+            )
+            button.birthday-rsvp-popup__guest-count-button.birthday-rsvp-popup__guest-count-button--down(
+              type='button'
+              aria-label='Decrease kids count'
+              :disabled='isKidsCountAtMinimum'
+              @click='decreaseKidsCount'
+            )
+      p.birthday-rsvp-popup__error(v-if='joinFormError') {{ joinFormError }}
+      .birthday-rsvp-popup__actions
+        button.birthday-rsvp-popup__button.birthday-rsvp-popup__button--secondary(
+          type='button'
+          :disabled='isSubmittingJoinForm'
+          @click='closeJoinPopup'
+        ) Cancel
+        button.birthday-rsvp-popup__button.birthday-rsvp-popup__button--primary(
+          type='submit'
+          :disabled='isSubmittingJoinForm'
+        ) {{ isSubmittingJoinForm ? 'Baby Lara is Reading...' : 'Join' }}
+  .birthday-rsvp-popup(
+    v-if='isThankYouPopupOpen'
+    role='dialog'
+    aria-modal='true'
+    aria-labelledby='birthday-rsvp-thanks-title'
+    @click.self='closeThankYouPopup'
+  )
+    .birthday-rsvp-popup__panel.birthday-rsvp-popup__panel--message
+      h2#birthday-rsvp-thanks-title.birthday-rsvp-popup__title Thank you and see you there!
+      img(
+        :src='thanksImg'
+        style='width: 100%; margin: 0 auto;'
+      )
+      button.birthday-rsvp-popup__button.birthday-rsvp-popup__button--primary(
+        type='button'
+        @click='closeThankYouPopup'
+      ) Close
+  .birthday-rsvp-popup(
+    v-if='isDeclinePopupOpen'
+    role='dialog'
+    aria-modal='true'
+    aria-labelledby='birthday-rsvp-decline-title'
+    @click.self='closeDeclinePopup'
+  )
+    .birthday-rsvp-popup__panel.birthday-rsvp-popup__panel--message
+      h2#birthday-rsvp-decline-title.birthday-rsvp-popup__title.q-ma-none Baby Lara is going to miss you!
+      .text-subtitle2 Feel free to submit your RSVP again if you change your mind.
+      p.birthday-rsvp-popup__error(v-if='declineFormError') {{ declineFormError }}
+      img(
+        :src='sadImg'
+        style='width: 100%; margin: 0 auto;'
+      )
+      button.birthday-rsvp-popup__button.birthday-rsvp-popup__button--primary(
+        type='button'
+        @click='closeDeclinePopup'
+      ) Close
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
+import { useRoute } from 'vue-router';
 import bg1Url from 'src/assets/images/bg/bg1.png';
-import sectionOneUrl from 'src/assets/images/schedule.png';
+import sectionTwoUrl from 'src/assets/images/section2.gif';
+import thanksImg from 'src/assets/images/ty.jpg';
+import sadImg from 'src/assets/images/sad.jpeg';
 
+const route = useRoute();
 const isImageVisible = ref(false);
-const sectionOneStyle = {
+const isJoinPopupOpen = ref(false);
+const isThankYouPopupOpen = ref(false);
+const isDeclinePopupOpen = ref(false);
+const isSubmittingJoinForm = ref(false);
+const isSubmittingDeclineForm = ref(false);
+const joinFormError = ref('');
+const declineFormError = ref('');
+const googleSheetId = '1ZhRPpUreSLnTPRMP8yWRJNpk5hQVoaUuKAzg05FpGWw';
+const birthdayRsvpWebAppUrl = process.env.BIRTHDAY_RSVP_WEB_APP_URL || '';
+const sectionTwoStyle = {
   backgroundImage: `url(${bg1Url})`,
+};
+
+const getDefaultFullName = () => {
+  const nameFromQuery = route.query.n;
+  const queryValue = Array.isArray(nameFromQuery)
+    ? nameFromQuery.find((value) => typeof value === 'string' && value.trim())
+    : nameFromQuery;
+
+  return typeof queryValue === 'string' ? queryValue.trim() : '';
+};
+
+const defaultFullName = getDefaultFullName();
+const fullName = ref(defaultFullName);
+const guestCount = ref('1');
+const kidsCount = ref('0');
+const isGuestCountAtMinimum = computed(() => Number(guestCount.value) <= 1);
+const isKidsCountAtMinimum = computed(() => Number(kidsCount.value) <= 0);
+
+const getCurrentGuestCount = () => {
+  const parsedGuestCount = Number(guestCount.value);
+
+  return Number.isFinite(parsedGuestCount) && parsedGuestCount >= 1
+    ? Math.floor(parsedGuestCount)
+    : 1;
+};
+
+const getCurrentKidsCount = () => {
+  const parsedKidsCount = Number(kidsCount.value);
+
+  return Number.isFinite(parsedKidsCount) && parsedKidsCount >= 0
+    ? Math.floor(parsedKidsCount)
+    : 0;
+};
+
+const normalizeGuestCount = () => {
+  guestCount.value = String(getCurrentGuestCount());
+};
+
+const normalizeKidsCount = () => {
+  kidsCount.value = String(getCurrentKidsCount());
+};
+
+const increaseGuestCount = () => {
+  guestCount.value = String(getCurrentGuestCount() + 1);
+};
+
+const increaseKidsCount = () => {
+  kidsCount.value = String(getCurrentKidsCount() + 1);
+};
+
+const decreaseGuestCount = () => {
+  guestCount.value = String(Math.max(1, getCurrentGuestCount() - 1));
+};
+
+const decreaseKidsCount = () => {
+  kidsCount.value = String(Math.max(0, getCurrentKidsCount() - 1));
+};
+
+const handleJoinClick = () => {
+  joinFormError.value = '';
+  isJoinPopupOpen.value = true;
+};
+
+const closeJoinPopup = () => {
+  if (isSubmittingJoinForm.value) {
+    return;
+  }
+
+  isJoinPopupOpen.value = false;
+};
+
+const closeThankYouPopup = () => {
+  isThankYouPopupOpen.value = false;
+};
+
+const closeDeclinePopup = () => {
+  isDeclinePopupOpen.value = false;
+};
+
+const getValidatedRsvp = () => {
+  const trimmedFullName = fullName.value.trim();
+  const parsedGuestCount = getCurrentGuestCount();
+  const parsedKidsCount = getCurrentKidsCount();
+
+  if (
+    !trimmedFullName ||
+    parsedGuestCount < 1 ||
+    parsedKidsCount < 0
+  ) {
+    throw new Error('Please complete all required fields.');
+  }
+
+  return {
+    fullName: trimmedFullName,
+    guestCount: parsedGuestCount,
+    kidsCount: parsedKidsCount,
+  };
+};
+
+const submitRsvpToGoogleSheet = async (rsvp) => {
+  if (!birthdayRsvpWebAppUrl) {
+    throw new Error('RSVP form is not connected yet.');
+  }
+
+  const formBody = new URLSearchParams({
+    spreadsheetId: googleSheetId,
+    fullName: rsvp.fullName,
+    guestCount: String(rsvp.guestCount),
+    kidsCount: String(rsvp.kidsCount ?? 0),
+    submittedAt: new Date().toISOString(),
+  });
+
+  await fetch(birthdayRsvpWebAppUrl, {
+    method: 'POST',
+    mode: 'no-cors',
+    body: formBody,
+  });
+};
+
+const resetJoinForm = () => {
+  fullName.value = '';
+  guestCount.value = '1';
+  kidsCount.value = '0';
+  joinFormError.value = '';
+};
+
+const handleJoinSubmit = async () => {
+  joinFormError.value = '';
+
+  try {
+    const rsvp = getValidatedRsvp();
+
+    isSubmittingJoinForm.value = true;
+    await submitRsvpToGoogleSheet(rsvp);
+
+    isJoinPopupOpen.value = false;
+    isThankYouPopupOpen.value = true;
+    resetJoinForm();
+  } catch (error) {
+    joinFormError.value =
+      error instanceof Error ? error.message : 'Unable to submit RSVP.';
+  } finally {
+    isSubmittingJoinForm.value = false;
+  }
+};
+
+const handleDeclineClick = async () => {
+  const declineFullName = defaultFullName || fullName.value.trim();
+  isDeclinePopupOpen.value = true;
+
+  if (declineFullName) {
+    submitRsvpToGoogleSheet({
+      fullName: declineFullName,
+      guestCount: 'not going',
+      kidsCount: 0,
+    });
+  }
 };
 
 onMounted(() => {
@@ -28,13 +324,13 @@ onMounted(() => {
 </script>
 
 <style lang="scss" scoped>
-.birthday-section-one {
+.birthday-section-two {
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
 }
 
-.birthday-section-one__image {
+.birthday-section-two__image {
   position: absolute;
   inset: 0;
   display: block;
@@ -45,21 +341,215 @@ onMounted(() => {
   opacity: 0;
   filter: blur(18px);
   transform: translateY(48px);
-  transition:
-    transform 900ms cubic-bezier(0.16, 1, 0.3, 1),
-    filter 900ms ease,
+  transition: transform 900ms cubic-bezier(0.16, 1, 0.3, 1), filter 900ms ease,
     opacity 650ms ease;
   will-change: transform, filter, opacity;
 }
 
-.birthday-section-one__image--visible {
+.birthday-section-two__image--visible {
   opacity: 1;
   filter: blur(0);
   transform: translateY(0);
 }
 
+.birthday-section-two__option {
+  position: absolute;
+  z-index: 1;
+  display: block;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  appearance: none;
+  cursor: pointer;
+}
+
+.birthday-section-two__option:focus-visible {
+  outline: 2px solid rgba(175, 46, 67, 0.7);
+  outline-offset: 4px;
+  border-radius: 16px;
+}
+
+.birthday-section-two__option--join {
+  left: 26.8%;
+  top: 36.6%;
+  width: 45.9%;
+  height: 22.3%;
+}
+
+.birthday-section-two__option--decline {
+  left: 26.9%;
+  top: 62.7%;
+  width: 46.3%;
+  height: 21.3%;
+}
+
+.birthday-rsvp-popup {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(53, 28, 31, 0.44);
+  backdrop-filter: blur(4px);
+}
+
+.birthday-rsvp-popup__panel {
+  width: min(100%, 340px);
+  padding: 22px;
+  color: #4a1f27;
+  background: rgba(255, 248, 247, 0.96);
+  border: 1px solid rgba(175, 46, 67, 0.2);
+  border-radius: 8px;
+  box-shadow: 0 18px 44px rgba(53, 28, 31, 0.24);
+}
+
+.birthday-rsvp-popup__panel--message {
+  text-align: center;
+}
+
+.birthday-rsvp-popup__title {
+  font-family: cursive;
+  margin: 0 0 18px;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: #af2e43;
+  text-align: center;
+}
+
+.birthday-rsvp-popup__field {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 14px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #6d2b35;
+}
+
+.birthday-rsvp-popup__field input {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 12px;
+  font: inherit;
+  font-weight: 500;
+  color: #3f2026;
+  background: #fff;
+  border: 1px solid rgba(175, 46, 67, 0.35);
+  border-radius: 8px;
+  outline: none;
+}
+
+.birthday-rsvp-popup__field input:focus {
+  border-color: #af2e43;
+  box-shadow: 0 0 0 3px rgba(175, 46, 67, 0.14);
+}
+
+.birthday-rsvp-popup__guest-count {
+  display: grid;
+  grid-template-columns: 1fr 44px;
+  gap: 8px;
+  align-items: stretch;
+}
+
+.birthday-rsvp-popup__guest-count input {
+  min-width: 0;
+}
+
+.birthday-rsvp-popup__guest-count-actions {
+  display: grid;
+  gap: 4px;
+}
+
+.birthday-rsvp-popup__guest-count-button {
+  display: grid;
+  place-items: center;
+  min-height: 0;
+  padding: 0;
+  color: #7c3540;
+  background: #fff;
+  border: 1px solid rgba(175, 46, 67, 0.35);
+  border-radius: 8px;
+  font: inherit;
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.birthday-rsvp-popup__guest-count-button::before {
+  display: block;
+  width: 0;
+  height: 0;
+  border-right: 6px solid transparent;
+  border-left: 6px solid transparent;
+  content: '';
+}
+
+.birthday-rsvp-popup__guest-count-button--up::before {
+  border-bottom: 7px solid currentColor;
+}
+
+.birthday-rsvp-popup__guest-count-button--down::before {
+  border-top: 7px solid currentColor;
+}
+
+.birthday-rsvp-popup__guest-count-button:focus-visible {
+  border-color: #af2e43;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(175, 46, 67, 0.14);
+}
+
+.birthday-rsvp-popup__guest-count-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.birthday-rsvp-popup__error {
+  margin: 0 0 14px;
+  font-size: 13px;
+  line-height: 1.35;
+  color: #b42335;
+}
+
+.birthday-rsvp-popup__actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.birthday-rsvp-popup__button {
+  min-height: 42px;
+  padding: 9px 12px;
+  font: inherit;
+  font-weight: 700;
+  line-height: 1.2;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.birthday-rsvp-popup__button:disabled {
+  cursor: wait;
+  opacity: 0.72;
+}
+
+.birthday-rsvp-popup__button--primary {
+  color: #fff;
+  background: #af2e43;
+  border-color: #af2e43;
+}
+
+.birthday-rsvp-popup__button--secondary {
+  color: #7c3540;
+  background: #fff;
+  border-color: rgba(175, 46, 67, 0.25);
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .birthday-section-one__image {
+  .birthday-section-two__image {
     opacity: 1;
     filter: none;
     transform: none;
