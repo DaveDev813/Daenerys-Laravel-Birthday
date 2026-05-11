@@ -53,15 +53,17 @@ const sectionNameCollator = new Intl.Collator(undefined, {
   sensitivity: 'base',
 });
 const sectionNumberNames = new Map([
-  ['zero', 0],
-  ['one', 1],
-  ['two', 2],
-  ['three', 3],
-  ['four', 4],
-  ['five', 5],
-  ['six', 6],
-  ['seven', 7],
-  ['eight', 8],
+  ['letter', 0],
+  ['intro', 1],
+  ['godparents', 2],
+  ['invite', 3],
+  ['rsvp', 4],
+  ['outfit', 5],
+  ['schedule', 6],
+  ['churchloc', 7],
+  ['partyloc', 8],
+
+
   ['nine', 9],
   ['ten', 10],
   ['eleven', 11],
@@ -136,7 +138,7 @@ const allBirthdaySections = Object.entries(sectionComponentModules)
 
 const birthdaySections = computed(() =>
   allBirthdaySections.filter(
-    (section) => section.id !== 'zero' || hasGuestName.value
+    (section) => section.id !== 'letter' || hasGuestName.value
   )
 );
 
