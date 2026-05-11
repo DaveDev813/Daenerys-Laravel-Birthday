@@ -1,344 +1,559 @@
 <template lang="pug">
-.full-width.full-height.birthday-section-frame.birthday-section-three(
-  ref='sectionRef'
-  :style='sectionThreeStyle'
+.full-width.full-height.birthday-section-frame.birthday-section-two(
+  :style='sectionTwoStyle'
 )
-  .birthday-section-three__short
-    .birthday-section-three__short-player(ref='playerRef')
-    button.birthday-section-three__sound-button(
-      v-if='isSoundButtonVisible'
-      type='button'
-      aria-label='Play video with sound'
-      @click='enableSound'
-    )
-      span.birthday-section-three__sound-icon(aria-hidden='true')
+  img.birthday-section-two__image(
+    :src='sectionTwoUrl'
+    :class='{ "birthday-section-two__image--visible": isImageVisible }'
+    alt=''
+    aria-hidden='true'
+  )
+  button.birthday-section-two__option.birthday-section-two__option--join(
+    type='button'
+    aria-label='I love to come'
+    @click='handleJoinClick'
+  )
+  button.birthday-section-two__option.birthday-section-two__option--decline(
+    type='button'
+    aria-label='Sorry, I cannot join'
+    :disabled='isSubmittingDeclineForm'
+    @click='handleDeclineClick'
+  )
+  .birthday-rsvp-popup(
+    v-if='isJoinPopupOpen'
+    role='dialog'
+    aria-modal='true'
+    aria-labelledby='birthday-rsvp-title'
+    @click.self='closeJoinPopup'
+  )
+    form.birthday-rsvp-popup__panel(@submit.prevent='handleJoinSubmit')
+      h2#birthday-rsvp-title.birthday-rsvp-popup__title Join us
+      label.birthday-rsvp-popup__field
+        span Guest Full Name
+        input(
+          v-model='fullName'
+          type='text'
+          name='fullName'
+          autocomplete='name'
+          required
+        )
+      .birthday-rsvp-popup__field
+        label(for='guestCount') Number of Adult(s) Comming Ages 11 above
+        .birthday-rsvp-popup__guest-count
+          input#guestCount(
+            v-model='guestCount'
+            type='number'
+            name='guestCount'
+            min='1'
+            step='1'
+            inputmode='numeric'
+            required
+            @input='normalizeGuestCount'
+          )
+          .birthday-rsvp-popup__guest-count-actions
+            button.birthday-rsvp-popup__guest-count-button.birthday-rsvp-popup__guest-count-button--up(
+              type='button'
+              aria-label='Increase guest count'
+              @click='increaseGuestCount'
+            )
+            button.birthday-rsvp-popup__guest-count-button.birthday-rsvp-popup__guest-count-button--down(
+              type='button'
+              aria-label='Decrease guest count'
+              :disabled='isGuestCountAtMinimum'
+              @click='decreaseGuestCount'
+            )
+      .birthday-rsvp-popup__field
+        label(for='kidsCount') Number of kids(s) Comming Ages 1-10
+        .birthday-rsvp-popup__guest-count
+          input#kidsCount(
+            v-model='kidsCount'
+            type='number'
+            name='kidsCount'
+            min='0'
+            step='1'
+            inputmode='numeric'
+            required
+            @input='normalizeKidsCount'
+          )
+          .birthday-rsvp-popup__guest-count-actions
+            button.birthday-rsvp-popup__guest-count-button.birthday-rsvp-popup__guest-count-button--up(
+              type='button'
+              aria-label='Increase kids count'
+              @click='increaseKidsCount'
+            )
+            button.birthday-rsvp-popup__guest-count-button.birthday-rsvp-popup__guest-count-button--down(
+              type='button'
+              aria-label='Decrease kids count'
+              :disabled='isKidsCountAtMinimum'
+              @click='decreaseKidsCount'
+            )
+      p.birthday-rsvp-popup__error(v-if='joinFormError') {{ joinFormError }}
+      .birthday-rsvp-popup__actions
+        button.birthday-rsvp-popup__button.birthday-rsvp-popup__button--secondary(
+          type='button'
+          :disabled='isSubmittingJoinForm'
+          @click='closeJoinPopup'
+        ) Cancel
+        button.birthday-rsvp-popup__button.birthday-rsvp-popup__button--primary(
+          type='submit'
+          :disabled='isSubmittingJoinForm'
+        ) {{ isSubmittingJoinForm ? 'Baby Lara is Reading...' : 'Join' }}
+  .birthday-rsvp-popup(
+    v-if='isThankYouPopupOpen'
+    role='dialog'
+    aria-modal='true'
+    aria-labelledby='birthday-rsvp-thanks-title'
+    @click.self='closeThankYouPopup'
+  )
+    .birthday-rsvp-popup__panel.birthday-rsvp-popup__panel--message
+      h2#birthday-rsvp-thanks-title.birthday-rsvp-popup__title Thank you and see you there!
+      img(
+        :src='thanksImg'
+        style='width: 100%; margin: 0 auto;'
+      )
+      button.birthday-rsvp-popup__button.birthday-rsvp-popup__button--primary(
+        type='button'
+        @click='closeThankYouPopup'
+      ) Close
+  .birthday-rsvp-popup(
+    v-if='isDeclinePopupOpen'
+    role='dialog'
+    aria-modal='true'
+    aria-labelledby='birthday-rsvp-decline-title'
+    @click.self='closeDeclinePopup'
+  )
+    .birthday-rsvp-popup__panel.birthday-rsvp-popup__panel--message
+      h2#birthday-rsvp-decline-title.birthday-rsvp-popup__title.q-ma-none Baby Lara is going to miss you!
+      .text-subtitle2 Feel free to submit your RSVP again if you change your mind.
+      p.birthday-rsvp-popup__error(v-if='declineFormError') {{ declineFormError }}
+      img(
+        :src='sadImg'
+        style='width: 100%; margin: 0 auto;'
+      )
+      button.birthday-rsvp-popup__button.birthday-rsvp-popup__button--primary(
+        type='button'
+        @click='closeDeclinePopup'
+      ) Close
 </template>
 
 <script setup>
-import { onBeforeUnmount, onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
+import { useRoute } from 'vue-router';
 import bg1Url from 'src/assets/images/bg/bg1.png';
+import sectionTwoUrl from 'src/assets/images/section2.gif';
+import thanksImg from 'src/assets/images/ty.jpg';
+import sadImg from 'src/assets/images/sad.jpeg';
 
-const sectionRef = ref(null);
-const playerRef = ref(null);
-const isSoundButtonVisible = ref(false);
-const youtubeShortId = 'DB0qEwxM0rQ';
-const sectionThreeStyle = {
+const route = useRoute();
+const isImageVisible = ref(false);
+const isJoinPopupOpen = ref(false);
+const isThankYouPopupOpen = ref(false);
+const isDeclinePopupOpen = ref(false);
+const isSubmittingJoinForm = ref(false);
+const isSubmittingDeclineForm = ref(false);
+const joinFormError = ref('');
+const declineFormError = ref('');
+const googleSheetId = '1ZhRPpUreSLnTPRMP8yWRJNpk5hQVoaUuKAzg05FpGWw';
+const birthdayRsvpWebAppUrl = process.env.BIRTHDAY_RSVP_WEB_APP_URL || '';
+const sectionTwoStyle = {
   backgroundImage: `url(${bg1Url})`,
 };
-let sectionObserver = null;
-let youtubePlayer = null;
-let hasRequestedPlayback = false;
-let hasEnabledSound = false;
-let autoplayFallbackTimeout = null;
 
-const loadYouTubeApi = () => {
-  if (window.YT?.Player) {
-    return Promise.resolve(window.YT);
+const getDefaultFullName = () => {
+  const nameFromQuery = route.query.n;
+  const queryValue = Array.isArray(nameFromQuery)
+    ? nameFromQuery.find((value) => typeof value === 'string' && value.trim())
+    : nameFromQuery;
+
+  return typeof queryValue === 'string' ? queryValue.trim() : '';
+};
+
+const defaultFullName = getDefaultFullName();
+const fullName = ref(defaultFullName);
+const guestCount = ref('1');
+const kidsCount = ref('0');
+const isGuestCountAtMinimum = computed(() => Number(guestCount.value) <= 1);
+const isKidsCountAtMinimum = computed(() => Number(kidsCount.value) <= 0);
+
+const getCurrentGuestCount = () => {
+  const parsedGuestCount = Number(guestCount.value);
+
+  return Number.isFinite(parsedGuestCount) && parsedGuestCount >= 1
+    ? Math.floor(parsedGuestCount)
+    : 1;
+};
+
+const getCurrentKidsCount = () => {
+  const parsedKidsCount = Number(kidsCount.value);
+
+  return Number.isFinite(parsedKidsCount) && parsedKidsCount >= 0
+    ? Math.floor(parsedKidsCount)
+    : 0;
+};
+
+const normalizeGuestCount = () => {
+  guestCount.value = String(getCurrentGuestCount());
+};
+
+const normalizeKidsCount = () => {
+  kidsCount.value = String(getCurrentKidsCount());
+};
+
+const increaseGuestCount = () => {
+  guestCount.value = String(getCurrentGuestCount() + 1);
+};
+
+const increaseKidsCount = () => {
+  kidsCount.value = String(getCurrentKidsCount() + 1);
+};
+
+const decreaseGuestCount = () => {
+  guestCount.value = String(Math.max(1, getCurrentGuestCount() - 1));
+};
+
+const decreaseKidsCount = () => {
+  kidsCount.value = String(Math.max(0, getCurrentKidsCount() - 1));
+};
+
+const handleJoinClick = () => {
+  joinFormError.value = '';
+  isJoinPopupOpen.value = true;
+};
+
+const closeJoinPopup = () => {
+  if (isSubmittingJoinForm.value) {
+    return;
   }
 
-  if (window.__birthdayYouTubeApiPromise) {
-    return window.__birthdayYouTubeApiPromise;
+  isJoinPopupOpen.value = false;
+};
+
+const closeThankYouPopup = () => {
+  isThankYouPopupOpen.value = false;
+};
+
+const closeDeclinePopup = () => {
+  isDeclinePopupOpen.value = false;
+};
+
+const getValidatedRsvp = () => {
+  const trimmedFullName = fullName.value.trim();
+  const parsedGuestCount = getCurrentGuestCount();
+  const parsedKidsCount = getCurrentKidsCount();
+
+  if (
+    !trimmedFullName ||
+    parsedGuestCount < 1 ||
+    parsedKidsCount < 0
+  ) {
+    throw new Error('Please complete all required fields.');
   }
 
-  window.__birthdayYouTubeApiPromise = new Promise((resolve, reject) => {
-    const previousCallback = window.onYouTubeIframeAPIReady;
-    const existingScript = document.querySelector(
-      'script[src="https://www.youtube.com/iframe_api"]'
-    );
+  return {
+    fullName: trimmedFullName,
+    guestCount: parsedGuestCount,
+    kidsCount: parsedKidsCount,
+  };
+};
 
-    window.onYouTubeIframeAPIReady = () => {
-      if (typeof previousCallback === 'function') {
-        previousCallback();
-      }
+const submitRsvpToGoogleSheet = async (rsvp) => {
+  if (!birthdayRsvpWebAppUrl) {
+    throw new Error('RSVP form is not connected yet.');
+  }
 
-      resolve(window.YT);
-    };
-
-    if (existingScript) {
-      existingScript.addEventListener('error', reject, { once: true });
-      return;
-    }
-
-    const youtubeScript = document.createElement('script');
-    youtubeScript.src = 'https://www.youtube.com/iframe_api';
-    youtubeScript.async = true;
-    youtubeScript.onerror = reject;
-    document.head.appendChild(youtubeScript);
+  const formBody = new URLSearchParams({
+    spreadsheetId: googleSheetId,
+    fullName: rsvp.fullName,
+    guestCount: String(rsvp.guestCount),
+    kidsCount: String(rsvp.kidsCount ?? 0),
+    submittedAt: new Date().toISOString(),
   });
 
-  return window.__birthdayYouTubeApiPromise;
+  await fetch(birthdayRsvpWebAppUrl, {
+    method: 'POST',
+    mode: 'no-cors',
+    body: formBody,
+  });
 };
 
-const clearAutoplayFallback = () => {
-  if (autoplayFallbackTimeout) {
-    window.clearTimeout(autoplayFallbackTimeout);
-    autoplayFallbackTimeout = null;
-  }
+const resetJoinForm = () => {
+  fullName.value = '';
+  guestCount.value = '1';
+  kidsCount.value = '0';
+  joinFormError.value = '';
 };
 
-const isPlayerPlaying = () => {
-  if (!youtubePlayer) {
-    return false;
-  }
-
-  return youtubePlayer.getPlayerState() === window.YT?.PlayerState?.PLAYING;
-};
-
-const playShortMuted = () => {
-  if (!youtubePlayer) {
-    return;
-  }
-
-  youtubePlayer.mute();
-  youtubePlayer.playVideo();
-  isSoundButtonVisible.value = !hasEnabledSound;
-};
-
-const playShortWithSound = () => {
-  if (!youtubePlayer) {
-    return;
-  }
-
-  youtubePlayer.unMute();
-  youtubePlayer.setVolume(100);
-  youtubePlayer.playVideo();
-  isSoundButtonVisible.value = false;
-};
-
-const playShort = () => {
-  hasRequestedPlayback = true;
-  sectionObserver?.disconnect();
-  sectionObserver = null;
-
-  if (!youtubePlayer) {
-    return;
-  }
-
-  if (hasEnabledSound) {
-    playShortWithSound();
-    return;
-  }
-
-  playShortWithSound();
-  clearAutoplayFallback();
-  autoplayFallbackTimeout = window.setTimeout(() => {
-    if (!isPlayerPlaying() && !hasEnabledSound) {
-      playShortMuted();
-    }
-  }, 700);
-};
-
-const enableSound = () => {
-  if (!youtubePlayer) {
-    return;
-  }
-
-  hasEnabledSound = true;
-  clearAutoplayFallback();
-  playShortWithSound();
-};
-
-const isSectionInView = () => {
-  const sectionElement = sectionRef.value;
-  const stageElement = sectionElement?.closest('.birthday-stage');
-
-  if (!sectionElement || !stageElement) {
-    return false;
-  }
-
-  const sectionRect = sectionElement.getBoundingClientRect();
-  const stageRect = stageElement.getBoundingClientRect();
-  const visibleHeight =
-    Math.min(sectionRect.bottom, stageRect.bottom) -
-    Math.max(sectionRect.top, stageRect.top);
-
-  return visibleHeight >= sectionRect.height * 0.5;
-};
-
-const enableSoundAfterGesture = () => {
-  if (isSectionInView()) {
-    enableSound();
-  }
-};
-
-const createPlayer = async () => {
-  if (!playerRef.value || youtubePlayer) {
-    return;
-  }
+const handleJoinSubmit = async () => {
+  joinFormError.value = '';
 
   try {
-    const youtubeApi = await loadYouTubeApi();
+    const rsvp = getValidatedRsvp();
 
-    if (!playerRef.value) {
-      return;
-    }
+    isSubmittingJoinForm.value = true;
+    await submitRsvpToGoogleSheet(rsvp);
 
-    youtubePlayer = new youtubeApi.Player(playerRef.value, {
-      width: '100%',
-      height: '100%',
-      videoId: youtubeShortId,
-      playerVars: {
-        autoplay: 0,
-        controls: 1,
-        loop: 1,
-        origin: window.location.origin,
-        playsinline: 1,
-        playlist: youtubeShortId,
-        rel: 0,
-      },
-      events: {
-        onReady: () => {
-          const playerIframe = youtubePlayer.getIframe();
-
-          playerIframe.title = 'Birthday YouTube Short';
-          playerIframe.setAttribute(
-            'allow',
-            'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share'
-          );
-          playerIframe.setAttribute(
-            'referrerpolicy',
-            'strict-origin-when-cross-origin'
-          );
-
-          if (hasRequestedPlayback) {
-            playShort();
-          }
-        },
-        onStateChange: () => {
-          if (isPlayerPlaying()) {
-            clearAutoplayFallback();
-          }
-        },
-        onAutoplayBlocked: () => {
-          playShortMuted();
-          isSoundButtonVisible.value = true;
-        },
-      },
-    });
+    isJoinPopupOpen.value = false;
+    isThankYouPopupOpen.value = true;
+    resetJoinForm();
   } catch (error) {
-    console.error('Unable to load YouTube Short player', error);
+    joinFormError.value =
+      error instanceof Error ? error.message : 'Unable to submit RSVP.';
+  } finally {
+    isSubmittingJoinForm.value = false;
+  }
+};
+
+const handleDeclineClick = async () => {
+  const declineFullName = defaultFullName || fullName.value.trim();
+  isDeclinePopupOpen.value = true;
+
+  if (declineFullName) {
+    submitRsvpToGoogleSheet({
+      fullName: declineFullName,
+      guestCount: 'not going',
+      kidsCount: 0,
+    });
   }
 };
 
 onMounted(() => {
-  const sectionElement = sectionRef.value;
-
-  if (!sectionElement) {
-    return;
-  }
-
-  void createPlayer();
-  window.addEventListener('pointerup', enableSoundAfterGesture, {
-    passive: true,
+  requestAnimationFrame(() => {
+    isImageVisible.value = true;
   });
-  window.addEventListener('touchend', enableSoundAfterGesture, {
-    passive: true,
-  });
-
-  if (!('IntersectionObserver' in window)) {
-    playShort();
-    return;
-  }
-
-  sectionObserver = new IntersectionObserver(
-    (entries) => {
-      const isSectionInView = entries.some(
-        (entry) => entry.isIntersecting && entry.intersectionRatio >= 0.5
-      );
-
-      if (isSectionInView) {
-        playShort();
-      }
-    },
-    {
-      root: sectionElement.closest('.birthday-stage'),
-      threshold: [0.5],
-    }
-  );
-
-  sectionObserver.observe(sectionElement);
-});
-
-onBeforeUnmount(() => {
-  window.removeEventListener('pointerup', enableSoundAfterGesture);
-  window.removeEventListener('touchend', enableSoundAfterGesture);
-  clearAutoplayFallback();
-  sectionObserver?.disconnect();
-  youtubePlayer?.destroy();
 });
 </script>
 
 <style lang="scss" scoped>
-.birthday-section-three {
+.birthday-section-two {
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
-  background-color: #000;
 }
 
-.birthday-section-three__short,
-.birthday-section-three__short-player,
-.birthday-section-three__short :deep(iframe) {
+.birthday-section-two__image {
   position: absolute;
   inset: 0;
   display: block;
   width: 100%;
   height: 100%;
-  border: 0;
+  object-fit: contain;
+  object-position: center;
+  opacity: 0;
+  filter: blur(18px);
+  transform: translateY(48px);
+  transition: transform 900ms cubic-bezier(0.16, 1, 0.3, 1), filter 900ms ease,
+    opacity 650ms ease;
+  will-change: transform, filter, opacity;
 }
 
-.birthday-section-three__sound-button {
+.birthday-section-two__image--visible {
+  opacity: 1;
+  filter: blur(0);
+  transform: translateY(0);
+}
+
+.birthday-section-two__option {
   position: absolute;
-  inset: 0;
-  z-index: 2;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  width: 100%;
-  height: 100%;
+  z-index: 1;
+  display: block;
   padding: 0;
   border: 0;
   background: transparent;
+  appearance: none;
   cursor: pointer;
 }
 
-.birthday-section-three__sound-button:focus-visible {
-  outline: 2px solid rgba(255, 255, 255, 0.9);
-  outline-offset: 3px;
+.birthday-section-two__option:focus-visible {
+  outline: 2px solid rgba(175, 46, 67, 0.7);
+  outline-offset: 4px;
+  border-radius: 16px;
 }
 
-.birthday-section-three__sound-icon {
-  position: relative;
+.birthday-section-two__option--join {
+  left: 26.8%;
+  top: 36.6%;
+  width: 45.9%;
+  height: 22.3%;
+}
+
+.birthday-section-two__option--decline {
+  left: 26.9%;
+  top: 62.7%;
+  width: 46.3%;
+  height: 21.3%;
+}
+
+.birthday-rsvp-popup {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(53, 28, 31, 0.44);
+  backdrop-filter: blur(4px);
+}
+
+.birthday-rsvp-popup__panel {
+  width: min(100%, 340px);
+  padding: 22px;
+  color: #4a1f27;
+  background: rgba(255, 248, 247, 0.96);
+  border: 1px solid rgba(175, 46, 67, 0.2);
+  border-radius: 8px;
+  box-shadow: 0 18px 44px rgba(53, 28, 31, 0.24);
+}
+
+.birthday-rsvp-popup__panel--message {
+  text-align: center;
+}
+
+.birthday-rsvp-popup__title {
+  font-family: cursive;
+  margin: 0 0 18px;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: #af2e43;
+  text-align: center;
+}
+
+.birthday-rsvp-popup__field {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 14px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #6d2b35;
+}
+
+.birthday-rsvp-popup__field input {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 12px;
+  font: inherit;
+  font-weight: 500;
+  color: #3f2026;
+  background: #fff;
+  border: 1px solid rgba(175, 46, 67, 0.35);
+  border-radius: 8px;
+  outline: none;
+}
+
+.birthday-rsvp-popup__field input:focus {
+  border-color: #af2e43;
+  box-shadow: 0 0 0 3px rgba(175, 46, 67, 0.14);
+}
+
+.birthday-rsvp-popup__guest-count {
+  display: grid;
+  grid-template-columns: 1fr 44px;
+  gap: 8px;
+  align-items: stretch;
+}
+
+.birthday-rsvp-popup__guest-count input {
+  min-width: 0;
+}
+
+.birthday-rsvp-popup__guest-count-actions {
+  display: grid;
+  gap: 4px;
+}
+
+.birthday-rsvp-popup__guest-count-button {
+  display: grid;
+  place-items: center;
+  min-height: 0;
+  padding: 0;
+  color: #7c3540;
+  background: #fff;
+  border: 1px solid rgba(175, 46, 67, 0.35);
+  border-radius: 8px;
+  font: inherit;
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.birthday-rsvp-popup__guest-count-button::before {
   display: block;
-  margin-right: 16px;
-  margin-bottom: 16px;
-  width: 20px;
-  height: 18px;
-  border-right: 12px solid white;
-  border-top: 8px solid transparent;
-  border-bottom: 8px solid transparent;
-  filter: drop-shadow(0 1px 4px rgba(0, 0, 0, 0.45));
-}
-
-.birthday-section-three__sound-icon::before {
-  position: absolute;
-  top: -6px;
-  left: -8px;
-  width: 8px;
-  height: 12px;
-  background: white;
+  width: 0;
+  height: 0;
+  border-right: 6px solid transparent;
+  border-left: 6px solid transparent;
   content: '';
 }
 
-.birthday-section-three__sound-icon::after {
-  position: absolute;
-  top: -9px;
-  right: -20px;
-  width: 12px;
-  height: 18px;
-  border: 2px solid white;
-  border-left: 0;
-  border-radius: 0 12px 12px 0;
-  content: '';
+.birthday-rsvp-popup__guest-count-button--up::before {
+  border-bottom: 7px solid currentColor;
+}
+
+.birthday-rsvp-popup__guest-count-button--down::before {
+  border-top: 7px solid currentColor;
+}
+
+.birthday-rsvp-popup__guest-count-button:focus-visible {
+  border-color: #af2e43;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(175, 46, 67, 0.14);
+}
+
+.birthday-rsvp-popup__guest-count-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.birthday-rsvp-popup__error {
+  margin: 0 0 14px;
+  font-size: 13px;
+  line-height: 1.35;
+  color: #b42335;
+}
+
+.birthday-rsvp-popup__actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.birthday-rsvp-popup__button {
+  min-height: 42px;
+  padding: 9px 12px;
+  font: inherit;
+  font-weight: 700;
+  line-height: 1.2;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.birthday-rsvp-popup__button:disabled {
+  cursor: wait;
+  opacity: 0.72;
+}
+
+.birthday-rsvp-popup__button--primary {
+  color: #fff;
+  background: #af2e43;
+  border-color: #af2e43;
+}
+
+.birthday-rsvp-popup__button--secondary {
+  color: #7c3540;
+  background: #fff;
+  border-color: rgba(175, 46, 67, 0.25);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .birthday-section-two__image {
+    opacity: 1;
+    filter: none;
+    transform: none;
+    transition: none;
+  }
 }
 </style>
