@@ -18,6 +18,10 @@ const routes: RouteRecordRaw[] = [
     children: [
       { path: '', component: () => import('src/pages/IndexPage.vue') },
       { path: 'invite', component: () => import('src/pages/IndexPage.vue') },
+      {
+        path: 'guest/:guestName/:guestType(gp)?',
+        component: () => import('src/pages/IndexPage.vue'),
+      },
     ],
   },
   {

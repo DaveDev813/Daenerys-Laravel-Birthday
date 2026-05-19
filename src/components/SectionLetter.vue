@@ -13,6 +13,7 @@ import { computed } from 'vue';
 import { useRoute } from 'vue-router';
 import bg1Url from 'src/assets/images/bg/bg2.png';
 import envelopeUrl from 'src/assets/images/envelope.png';
+import { getGuestNameFromRoute } from 'src/utils/guest-route';
 
 const route = useRoute();
 
@@ -24,14 +25,7 @@ const nameStyle = {
   backgroundImage: `url(${envelopeUrl})`,
 };
 
-const guestName = computed(() => {
-  const nameFromQuery = route.query.n;
-  const queryValue = Array.isArray(nameFromQuery)
-    ? nameFromQuery.find((value) => typeof value === 'string' && value.trim())
-    : nameFromQuery;
-
-  return typeof queryValue === 'string' ? queryValue.trim() : '';
-});
+const guestName = computed(() => getGuestNameFromRoute(route));
 </script>
 
 <style lang="scss" scoped>

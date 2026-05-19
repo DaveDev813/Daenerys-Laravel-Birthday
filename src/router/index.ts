@@ -7,6 +7,7 @@ import {
 } from 'vue-router';
 
 import routes from './routes';
+import { getGuestPathFromLegacyQuery } from 'src/utils/guest-route';
 
 /*
  * If not building with SSR mode, you can
@@ -30,6 +31,23 @@ export default route(function (/* { store, ssrContext } */) {
     // quasar.conf.js -> build -> vueRouterMode
     // quasar.conf.js -> build -> publicPath
     history: createHistory(process.env.VUE_ROUTER_BASE),
+  });
+
+  Router.beforeEach((to) => {
+    const canRedirectLegacyGuestUrl =
+      to.path === '/' || to.path === '/invite' || to.path === '/invite/';
+    const guestPath = canRedirectLegacyGuestUrl
+      ? getGuestPathFromLegacyQuery(to)
+      : '';
+
+    if (!guestPath) {
+      return true;
+    }
+
+    return {
+      path: guestPath,
+      hash: to.hash,
+    };
   });
 
   return Router;

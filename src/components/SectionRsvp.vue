@@ -143,6 +143,7 @@ import bg1Url from 'src/assets/images/bg/bg1.png';
 import sectionTwoUrl from 'src/assets/images/section2.gif';
 import thanksImg from 'src/assets/images/ty.jpg';
 import sadImg from 'src/assets/images/sad.jpeg';
+import { getGuestNameFromRoute } from 'src/utils/guest-route';
 
 const route = useRoute();
 const isImageVisible = ref(false);
@@ -159,16 +160,7 @@ const sectionTwoStyle = {
   backgroundImage: `url(${bg1Url})`,
 };
 
-const getDefaultFullName = () => {
-  const nameFromQuery = route.query.n;
-  const queryValue = Array.isArray(nameFromQuery)
-    ? nameFromQuery.find((value) => typeof value === 'string' && value.trim())
-    : nameFromQuery;
-
-  return typeof queryValue === 'string' ? queryValue.trim() : '';
-};
-
-const defaultFullName = getDefaultFullName();
+const defaultFullName = getGuestNameFromRoute(route);
 const fullName = ref(defaultFullName);
 const guestCount = ref('1');
 const kidsCount = ref('0');

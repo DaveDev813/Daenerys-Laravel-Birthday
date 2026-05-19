@@ -38,6 +38,10 @@ import {
 } from 'vue';
 import { useRoute } from 'vue-router';
 import scrollDownImage from '../assets/images/scroll_down.png';
+import {
+  getGuestNameFromRoute,
+  isGodparentGuestRoute,
+} from 'src/utils/guest-route';
 
 const route = useRoute();
 const isMobileViewport = ref(false);
@@ -92,19 +96,8 @@ const getSectionOrder = (sectionId) => {
   return sectionNumberNames.get(sectionId) ?? Number.MAX_SAFE_INTEGER;
 };
 
-const getGuestName = () => {
-  const queryName = route.query.n;
-  const queryValue = Array.isArray(queryName)
-    ? queryName.find((value) => typeof value === 'string' && value.trim())
-    : queryName;
-
-  return typeof queryValue === 'string' ? queryValue.trim() : '';
-};
-
-const hasGuestName = computed(() => getGuestName() !== '');
-const hasGodparentsParam = computed(() =>
-  Object.prototype.hasOwnProperty.call(route.query, 'isgp')
-);
+const hasGuestName = computed(() => getGuestNameFromRoute(route) !== '');
+const hasGodparentsParam = computed(() => isGodparentGuestRoute(route));
 
 const allBirthdaySections = Object.entries(sectionComponentModules)
   .map(([path, loader]) => ({

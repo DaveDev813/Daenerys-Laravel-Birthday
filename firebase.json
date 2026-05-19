@@ -51,6 +51,15 @@
         ]
       },
       {
+        "source": "/guest/**",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "public, max-age=0, must-revalidate"
+          }
+        ]
+      },
+      {
         "source": "/og-20260510.jpg",
         "headers": [
           {
@@ -67,6 +76,16 @@
             "value": "public, max-age=3600"
           }
         ]
+      }
+    ],
+    "rewrites": [
+      {
+        "source": "/guest/**",
+        "destination": "/index.html"
+      },
+      {
+        "source": "/invite/**",
+        "destination": "/index.html"
       }
     ]
   }
