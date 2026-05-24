@@ -5,18 +5,25 @@
 )
   .birthday-section-three__short
     .birthday-section-three__short-player(ref='playerRef')
-    button.birthday-section-three__sound-button(
+    q-btn.birthday-section-three__sound-button(
       v-if='isSoundButtonVisible'
       type='button'
       aria-label='Play video with sound'
       @click='enableSound'
+      flat
+      unelevated
     )
-      span.birthday-section-three__sound-icon(aria-hidden='true')
+      img.birthday-section-three__sound-image(
+        :src='unmuteUrl'
+        alt=''
+        aria-hidden='true'
+      )
 </template>
 
 <script setup>
 import { onBeforeUnmount, onMounted, ref } from 'vue';
 import bg1Url from 'src/assets/images/bg/bg1.png';
+import unmuteUrl from 'src/assets/images/unmute.png';
 
 const sectionRef = ref(null);
 const playerRef = ref(null);
@@ -321,10 +328,18 @@ onBeforeUnmount(() => {
   justify-content: flex-end;
   width: 100%;
   height: 100%;
+  min-width: 0;
+  min-height: 0;
   padding: 0;
   border: 0;
+  border-radius: 0;
   background: transparent;
   cursor: pointer;
+}
+
+.birthday-section-three__sound-button :deep(.q-btn__content) {
+  width: 100%;
+  height: 100%;
 }
 
 .birthday-section-three__sound-button:focus-visible {
@@ -332,38 +347,20 @@ onBeforeUnmount(() => {
   outline-offset: 3px;
 }
 
-.birthday-section-three__sound-icon {
-  position: relative;
+.birthday-section-three__sound-image {
+  margin-top: 100%;
   display: block;
-  margin-right: 16px;
-  margin-bottom: 16px;
-  width: 20px;
-  height: 18px;
-  border-right: 12px solid white;
-  border-top: 8px solid transparent;
-  border-bottom: 8px solid transparent;
-  filter: drop-shadow(0 1px 4px rgba(0, 0, 0, 0.45));
+  width: min(78vw, 380px);
+  max-width: calc(100% - 32px);
+  max-height: min(78vh, 560px);
+  object-fit: contain;
+  pointer-events: none;
 }
 
-.birthday-section-three__sound-icon::before {
-  position: absolute;
-  top: -6px;
-  left: -8px;
-  width: 8px;
-  height: 12px;
-  background: white;
-  content: '';
-}
-
-.birthday-section-three__sound-icon::after {
-  position: absolute;
-  top: -9px;
-  right: -20px;
-  width: 12px;
-  height: 18px;
-  border: 2px solid white;
-  border-left: 0;
-  border-radius: 0 12px 12px 0;
-  content: '';
+@media (min-width: 768px) {
+  .birthday-section-three__sound-image {
+    width: min(42vw, 420px);
+    max-height: 70vh;
+  }
 }
 </style>
